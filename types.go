@@ -1,4 +1,4 @@
-package ltree
+package losertree
 
 // type Luser interface {
 // 	// Следующее значение

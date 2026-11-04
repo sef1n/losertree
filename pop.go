@@ -1,4 +1,4 @@
-package ltree
+package losertree
 
 import "math"
 

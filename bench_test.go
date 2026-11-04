@@ -1,11 +1,11 @@
-package ltree_test
+package losertree_test
 
 import (
 	"fmt"
 	"math"
 	"testing"
 
-	"bigFiles/internal/ltree"
+	"losertree"
 
 	"github.com/bboreham/go-loser"
 )
@@ -42,7 +42,7 @@ func TestBenchCountsMatch(t *testing.T) {
 				initial[i] = seqs[i][0]
 				rest[i] = seqs[i][1:]
 			}
-			tree := ltree.Init(initial)
+			tree := losertree.Init(initial)
 			lc := 0
 			for lc < want {
 				ind, ok := tree.Peek()
@@ -88,7 +88,7 @@ func BenchmarkLtreePop(b *testing.B) {
 						initial[j] = leafs[j][0]
 						leafs[j] = leafs[j][1:]
 					}
-					tree := ltree.Init(initial)
+					tree := losertree.Init(initial)
 					b.StartTimer()
 
 					ind, ok := tree.Peek()
