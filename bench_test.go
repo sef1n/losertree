@@ -10,24 +10,85 @@ import (
 	"github.com/bboreham/go-loser"
 )
 
-// goLoserLoopCount — сколько значений реально отдаёт стандартный
-// цикл `for Next { At }` в go-loser. Используется тестом для
-// сверки и в комментарии к бенчмарку как «эталонное» число шагов.
-func goLoserLoopCount(k, n int) int {
-	seqs := makeSeqs(k, n)
-	gt := loser.New[int, *seq](seqs, math.MaxInt)
-	c := 0
-	for gt.Next() {
-		_ = gt.At()
-		c++
+// BenchmarkLtreePop measures exactly one merge: k sorted streams of n
+// values each, consumed via Peek + Upd/Kill + Pop until the tree is
+// exhausted. Setup (clone + Init) runs under StopTimer and is excluded
+// from the timed section.
+//
+// b.ReportAllocs() is intentionally NOT called. With allocs reporting
+// on, every b.StartTimer() invokes runtime.ReadMemStats, which does a
+// stop-the-world heap walk. In earlier -cpuprofile runs on k=256,n=1000
+// this consumed ~29% of wall time and drowned any 3-5% signal.
+//
+// The merge loop allocates nothing by design — no make, no new, no
+// boxing inside Peek/Upd/Kill/Pop. Alloc-freeness is verified by
+// TestNoAllocsInMergeLoop, not by -benchmem.
+func BenchmarkLtreePop(b *testing.B) {
+	for _, k := range []int{4, 16, 64, 256} {
+		for _, n := range []int{100, 1000} {
+			b.Run(fmt.Sprintf("k=%d,n=%d", k, n), func(b *testing.B) {
+				template := makeLeafs(k, n)
+				iters := k * (n - 1)
+
+				b.ResetTimer()
+				for i := 0; i < b.N; i++ {
+					b.StopTimer()
+					leafs := cloneLeafs(template)
+					initial := make([]int, k)
+					for j := range leafs {
+						initial[j] = leafs[j][0]
+						leafs[j] = leafs[j][1:]
+					}
+					tree := losertree.Init(initial)
+					b.StartTimer()
+
+					ind, ok := tree.Peek()
+					for j := 0; j < iters && ok; j++ {
+						if len(leafs[ind]) > 0 {
+							tree.Upd(ind, leafs[ind][0])
+							leafs[ind] = leafs[ind][1:]
+						} else {
+							tree.Kill(ind)
+						}
+						ind, ok = tree.Pop()
+					}
+				}
+			})
+		}
 	}
-	return c
 }
 
-// TestBenchCountsMatch гарантирует, что оба бенчмарка делают
-// одинаковое число шагов слияния. go-loser в стандартном цикле
-// `for Next {At}` теряет по одному значению на seq (первое),
-// поэтому ожидаемое число = k*(n-1). ltree обрезается до того же.
+// BenchmarkGoLoserPop is the symmetric baseline: k sorted streams,
+// loser.New as setup (under StopTimer), then the standard
+// `for Next { At }` loop. Same truncation to k*(n-1) steps as the ltree
+// benchmark because go-loser's New calls Next() on every sequence,
+// losing the first value of each — the comment in TestBenchCountsMatch
+// documents this.
+//
+// b.ReportAllocs() is omitted for the same reason as in
+// BenchmarkLtreePop: runtime.ReadMemStats would dominate wall time.
+func BenchmarkGoLoserPop(b *testing.B) {
+	for _, k := range []int{4, 16, 64, 256} {
+		for _, n := range []int{100, 1000} {
+			b.Run(fmt.Sprintf("k=%d,n=%d", k, n), func(b *testing.B) {
+				template := makeSeqs(k, n)
+
+				b.ResetTimer()
+				for i := 0; i < b.N; i++ {
+					b.StopTimer()
+					seqs := cloneSeqs(template)
+					tree := loser.New[int, *seq](seqs, math.MaxInt)
+					b.StartTimer()
+
+					for tree.Next() {
+						_ = tree.At()
+					}
+				}
+			})
+		}
+	}
+}
+
 func TestBenchCountsMatch(t *testing.T) {
 	for _, tc := range []struct{ k, n int }{
 		{4, 10}, {4, 100}, {16, 100}, {256, 100},
@@ -71,63 +132,15 @@ func TestBenchCountsMatch(t *testing.T) {
 	}
 }
 
-func BenchmarkLtreePop(b *testing.B) {
-	for _, k := range []int{4, 16, 64, 256} {
-		for _, n := range []int{100, 1000} {
-			b.Run(fmt.Sprintf("k=%d,n=%d", k, n), func(b *testing.B) {
-				template := makeLeafs(k, n)
-				iters := k * (n - 1)
-
-				b.ReportAllocs()
-				b.ResetTimer()
-				for i := 0; i < b.N; i++ {
-					b.StopTimer()
-					leafs := cloneLeafs(template)
-					initial := make([]int, k)
-					for j := range leafs {
-						initial[j] = leafs[j][0]
-						leafs[j] = leafs[j][1:]
-					}
-					tree := losertree.Init(initial)
-					b.StartTimer()
-
-					ind, ok := tree.Peek()
-					for j := 0; j < iters && ok; j++ {
-						if len(leafs[ind]) > 0 {
-							tree.Upd(ind, leafs[ind][0])
-							leafs[ind] = leafs[ind][1:]
-						} else {
-							tree.Kill(ind)
-						}
-						ind, ok = tree.Pop()
-					}
-				}
-			})
-		}
+func goLoserLoopCount(k, n int) int {
+	seqs := makeSeqs(k, n)
+	gt := loser.New[int, *seq](seqs, math.MaxInt)
+	c := 0
+	for gt.Next() {
+		_ = gt.At()
+		c++
 	}
-}
-
-func BenchmarkGoLoserPop(b *testing.B) {
-	for _, k := range []int{4, 16, 64, 256} {
-		for _, n := range []int{100, 1000} {
-			b.Run(fmt.Sprintf("k=%d,n=%d", k, n), func(b *testing.B) {
-				template := makeSeqs(k, n)
-
-				b.ReportAllocs()
-				b.ResetTimer()
-				for i := 0; i < b.N; i++ {
-					b.StopTimer()
-					seqs := cloneSeqs(template)
-					tree := loser.New[int, *seq](seqs, math.MaxInt)
-					b.StartTimer()
-
-					for tree.Next() {
-						_ = tree.At()
-					}
-				}
-			})
-		}
-	}
+	return c
 }
 
 func makeLeafs(k, n int) [][]int {
@@ -152,13 +165,6 @@ func cloneLeafs(src [][]int) [][]int {
 	return dst
 }
 
-// seq адаптирует последовательность под loser.Sequence[int].
-// cur — текущее значение (то, что вернёт At), rest — оставшиеся.
-// makeSeqs инициализирует cur=vals[0], rest=vals[1:], поэтому
-// New видит настоящее первое значение, а не zero-value.
-// go-loser в New вызывает Next() на каждом seq — это «теряет»
-// первое значение; стандартный цикл `for Next { At }` отдаёт
-// k*(n-1) слияний. Бенчмарк ltree обрезан до того же числа.
 type seq struct {
 	cur  int
 	rest []int
