@@ -36,10 +36,10 @@ func BenchmarkMergePop(b *testing.B) {
 					ind, ok := tree.Peek()
 					for j := 0; j < iters && ok; j++ {
 						if len(leafs[ind]) > 0 {
-							tree.Upd(ind, leafs[ind][0])
+							tree.Upd(leafs[ind][0])
 							leafs[ind] = leafs[ind][1:]
 						} else {
-							tree.Kill(ind)
+							tree.Kill()
 						}
 						ind, ok = tree.Pop()
 					}

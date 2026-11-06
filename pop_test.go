@@ -90,10 +90,10 @@ func TestPop(t *testing.T) {
 				}
 
 				if len(rest[ind]) > 0 {
-					tree.Upd(ind, rest[ind][0])
+					tree.Upd(rest[ind][0])
 					rest[ind] = rest[ind][1:]
 				} else {
-					tree.Kill(ind)
+					tree.Kill()
 				}
 				tree.Pop()
 			}
@@ -110,15 +110,15 @@ func TestPop(t *testing.T) {
 func TestKill(t *testing.T) {
 	tree := Init([]int{1, 2, 3})
 
-	tree.Kill(1)
+	tree.Kill()
 
-	if tree.leafs[1].alive {
+	if tree.leafs[0].alive {
 		t.Error("leaf 1 still alive after Kill")
 	}
-	if tree.leafs[1].v != math.MaxInt {
+	if tree.leafs[0].v != math.MaxInt {
 		t.Errorf("leaf 1 v = %d, want MaxInt", tree.leafs[1].v)
 	}
-	if !tree.leafs[0].alive || !tree.leafs[2].alive {
+	if !tree.leafs[1].alive || !tree.leafs[2].alive {
 		t.Error("Kill(1) affected other leaves")
 	}
 
@@ -128,8 +128,8 @@ func TestKill(t *testing.T) {
 	if !ok {
 		t.Fatal("Peek after Kill+Pop returned ok=false")
 	}
-	if ind != 0 {
-		t.Errorf("winner ind = %d, want 0", ind)
+	if ind != 1 {
+		t.Errorf("winner ind = %d, want 1", ind)
 	}
 }
 
@@ -137,26 +137,18 @@ func TestKill(t *testing.T) {
 func TestUpd(t *testing.T) {
 	tree := Init([]int{1, 2, 3})
 
-	tree.Upd(1, 100)
-	if tree.leafs[1].v != 100 {
+	tree.Upd(100)
+	if tree.leafs[0].v != 100 {
 		t.Errorf("leaf 1 v = %d, want 100", tree.leafs[1].v)
 	}
-	if !tree.leafs[1].alive {
+	if !tree.leafs[0].alive {
 		t.Error("Upd killed the leaf")
 	}
 
-	// 1 (leaf 0) всё ещё минимальный — победитель не меняется.
+	// Новый победитель - [1]
 	tree.Pop()
 	ind, ok := tree.Peek()
-	if !ok || ind != 0 {
-		t.Errorf("Peek = (%d, %v), want (0, true)", ind, ok)
-	}
-
-	// Уменьшаем leaf 1 до 0 — теперь он победитель.
-	tree.Upd(1, 0)
-	tree.Pop()
-	ind, ok = tree.Peek()
 	if !ok || ind != 1 {
-		t.Errorf("Peek after Upd(1,0) = (%d, %v), want (1, true)", ind, ok)
+		t.Errorf("Peek = (%d, %v), want (1, true)", ind, ok)
 	}
 }
