@@ -72,10 +72,9 @@ func TestPop(t *testing.T) {
 				initial[i] = s[0]
 				rest[i] = s[1:]
 			}
-			tree := Init(initial)
+			tree, ind, ok := Init(initial)
 
 			for i, want := range test.want {
-				ind, ok := tree.Peek()
 				if ok != want.ok {
 					t.Fatalf("step %d: ok=%v want %v", i, ok, want.ok)
 				}
@@ -95,7 +94,7 @@ func TestPop(t *testing.T) {
 				} else {
 					tree.Kill()
 				}
-				tree.Pop()
+				ind, ok = tree.Pop()
 			}
 
 			// Повторный Pop на исчерпанном дереве — no-op, не паника.
@@ -108,7 +107,7 @@ func TestPop(t *testing.T) {
 
 // TestKill — регрессия на баг, когда Kill через копию leaf был no-op.
 func TestKill(t *testing.T) {
-	tree := Init([]int{1, 2, 3})
+	tree, _, _ := Init([]int{1, 2, 3})
 
 	tree.Kill()
 
@@ -123,8 +122,7 @@ func TestKill(t *testing.T) {
 	}
 
 	// Дерево должно пересчитать победителя после Pop.
-	tree.Pop()
-	ind, ok := tree.Peek()
+	ind, ok := tree.Pop()
 	if !ok {
 		t.Fatal("Peek after Kill+Pop returned ok=false")
 	}
@@ -135,7 +133,7 @@ func TestKill(t *testing.T) {
 
 // TestUpd — обновление значения не трогает alive и не ломает порядок.
 func TestUpd(t *testing.T) {
-	tree := Init([]int{1, 2, 3})
+	tree, _, _ := Init([]int{1, 2, 3})
 
 	tree.Upd(100)
 	if tree.leafs[0].v != 100 {
@@ -146,8 +144,7 @@ func TestUpd(t *testing.T) {
 	}
 
 	// Новый победитель - [1]
-	tree.Pop()
-	ind, ok := tree.Peek()
+	ind, ok := tree.Pop()
 	if !ok || ind != 1 {
 		t.Errorf("Peek = (%d, %v), want (1, true)", ind, ok)
 	}

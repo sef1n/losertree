@@ -17,9 +17,9 @@ import (
 // NOTE: если хранить статус листа через другую структуру ноды,
 // то нужен указатель. Текущая реализация быстрее?
 
-func Init(values []int) *LoserTree {
+func Init(values []int) (t *LoserTree, ind leafInd, ok bool) {
 	if values == nil || len(values) == 0 {
-		return nil
+		return
 	}
 	lt, ext := initiateStruct(values)
 
@@ -38,7 +38,7 @@ func Init(values []int) *LoserTree {
 	lt.winner.I = winners[1]
 	lt.winner.valid = true
 
-	return lt
+	return lt, lt.winner.I, lt.winner.valid
 }
 
 func initiateStruct(values []int) (*LoserTree, int) {

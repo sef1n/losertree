@@ -2,12 +2,6 @@ package losertree
 
 import "math"
 
-// TODO: Совместить Peek и Pop?
-func (t *LoserTree) Peek() (int, bool) {
-	w := t.winner
-	return w.I, w.valid
-}
-
 func (t *LoserTree) Upd(new int) {
 	t.leafs[t.winner.I].v = new
 }

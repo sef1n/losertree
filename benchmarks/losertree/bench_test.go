@@ -30,10 +30,9 @@ func BenchmarkMergePop(b *testing.B) {
 						initial[j] = leafs[j][0]
 						leafs[j] = leafs[j][1:]
 					}
-					tree := losertree.Init(initial)
+					tree, ind, ok := losertree.Init(initial)
 					b.StartTimer()
 
-					ind, ok := tree.Peek()
 					for j := 0; j < iters && ok; j++ {
 						if len(leafs[ind]) > 0 {
 							tree.Upd(leafs[ind][0])

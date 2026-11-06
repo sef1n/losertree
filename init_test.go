@@ -129,9 +129,17 @@ func TestInit(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			got := Init(test.in)
+			got, wI, wV := Init(test.in)
 			if !reflect.DeepEqual(got, test.want) {
 				t.Errorf("Init() mismatch\n got: %+v\nwant: %+v", got, test.want)
+			}
+
+			// Значения в дереве и в return не должны различаться, но на случай изменения логики:
+			if got != nil {
+				if wI != test.want.winner.I || wV != test.want.winner.valid {
+					t.Errorf("Got (ind:%v,valid:%v), want (ind:%v,valid:%v)",
+						wI, wV, test.want.winner.I, test.want.winner.valid)
+				}
 			}
 		})
 	}
