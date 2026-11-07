@@ -16,7 +16,7 @@ import (
 
 func BenchmarkMergePop(b *testing.B) {
 	for _, k := range []int{4, 16, 64, 256} {
-		for _, n := range []int{100, 1000} {
+		for _, n := range []int{100, 1_000} {
 			b.Run(fmt.Sprintf("k=%d,n=%d", k, n), func(b *testing.B) {
 				template := makeLeafs(k, n)
 				iters := k * (n - 1)
@@ -48,6 +48,19 @@ func BenchmarkMergePop(b *testing.B) {
 	}
 }
 
+func BenchmarkMergeInit(b *testing.B) {
+	for _, k := range []int{4, 16, 64, 256, 512, 1_000, 10_000, 100_000} {
+		b.Run(fmt.Sprintf("k=%d", k), func(b *testing.B) {
+			initial := genInitial(k)
+
+			b.ResetTimer()
+			for i := 0; i < b.N; i++ {
+				_, _, _ = losertree.Init(initial)
+			}
+		})
+	}
+}
+
 func makeLeafs(k, n int) [][]int {
 	leafs := make([][]int, k)
 	for i := range leafs {
@@ -68,4 +81,12 @@ func cloneLeafs(src [][]int) [][]int {
 		dst[i] = c
 	}
 	return dst
+}
+
+func genInitial(k int) []int {
+	initial := make([]int, k)
+	for i := range k {
+		initial[i] = i
+	}
+	return initial
 }
