@@ -4,29 +4,26 @@ import (
 	"math"
 )
 
-// NOTE: листья, чьи значения == nil || len == 0,
-// не участвуют в "турнире" - они приравниваются к
-// nil (inf value).
+// Init creates a LoserTree from the given values.
+// [math.MaxInt] is treated as an ordinary (live) value.
 //
-// NOTE: leafs с (cap == len + 1) ускоряют инициализацию
+// If values is nil or empty, it returns (nil, 0, false).
+// Otherwise it returns the [*LoserTree], the index of the winning leaf, and ok.
+// Both the [*LoserTree] and the index are meaningful only when ok is true.
 //
-// NOTE: можно удалить слайс t.leaf, но тогда усложнится battle
-//
-// TODO: функция создания слайса листев (для cap+1)
-//
-// NOTE: если хранить статус листа через другую структуру ноды,
-// то нужен указатель. Текущая реализация быстрее?
-
+// Init copies the input values and pads the leaf slice with dead entries to
+// the smallest power of two not less than len(values).
+// The nodes storage is twice the length of leaf storage.
 func Init(values []int) (t *LoserTree, ind leafInd, ok bool) {
 	if values == nil || len(values) == 0 {
-		return
+		return // nil, 0, false
 	}
-	lt, ext := initiateStruct(values)
+	t, ext := initiateStruct(values)
 
-	leafs := lt.leafs
-	nodes := lt.nodes
+	leafs := t.leafs
+	nodes := t.nodes
 	winners := make([]leafInd, ext*2)
-	copy(winners[ext:], lt.nodes[ext:])
+	copy(winners[ext:], t.nodes[ext:])
 
 	for p := ext - 1; p >= 1; p-- {
 		i, j := winners[p*2], winners[p*2+1]
@@ -35,10 +32,10 @@ func Init(values []int) (t *LoserTree, ind leafInd, ok bool) {
 		winners[p] = winner
 		nodes[p] = loser
 	}
-	lt.winner.I = winners[1]
-	lt.winner.valid = true
+	t.winner.I = winners[1]
+	t.winner.valid = true
 
-	return lt, lt.winner.I, lt.winner.valid
+	return t, t.winner.I, t.winner.valid
 }
 
 func initiateStruct(values []int) (*LoserTree, int) {
