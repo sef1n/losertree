@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"testing"
 
-	"losertree"
+	"github.com/sef1n/losertree"
 )
 
 func BenchmarkMergePop(b *testing.B) {

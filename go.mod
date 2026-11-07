@@ -1,4 +1,4 @@
-module losertree
+module github.com/sef1n/losertree
 
 go 1.27.1
 
