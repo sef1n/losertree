@@ -33,6 +33,19 @@ func BenchmarkMergePop(b *testing.B) {
 	}
 }
 
+func BenchmarkMergeInit(b *testing.B) {
+	for _, k := range []int{4, 16, 64, 256, 512, 1_000, 10_000, 100_000} {
+		b.Run(fmt.Sprintf("k=%d", k), func(b *testing.B) {
+			initial := genInitial(k)
+
+			b.ResetTimer()
+			for i := 0; i < b.N; i++ {
+				_ = loser.New[int, *seq](initial, math.MaxInt)
+			}
+		})
+	}
+}
+
 // seq adapts an int slice to loser.Sequence[int].
 //
 // cur — value returned by At(); rest — remaining values.
@@ -72,4 +85,13 @@ func cloneSeqs(src []*seq) []*seq {
 		dst[i] = &seq{cur: s.cur, rest: rest}
 	}
 	return dst
+}
+
+func genInitial(k int) []*seq {
+	initial := make([]*seq, k)
+	for i := range k {
+		vals := []int{i}
+		initial[i] = &seq{cur: vals[0], rest: []int{}}
+	}
+	return initial
 }
