@@ -23,3 +23,42 @@ Zero dependencies. `int` keys. No generics, no callbacks, no interface dispatch 
 ```sh
 go get github.com/sef1n/losertree
 ```
+
+## Quick Start
+```go
+package main
+
+import (
+	"github.com/sef1n/losertree"
+)
+
+// streams is k sorted int slices.
+func merge(streams [][]int) []int {
+	k := len(streams)
+	initial := make([]int, k)
+	for i := range streams {
+		initial[i] = streams[i][0]
+		streams[i] = streams[i][1:]
+	}
+
+	tree, ind, ok := losertree.Init(initial)
+	if tree == nil {
+		return nil
+	}
+
+	out := make([]int, 0)
+	for ok {
+		out = append(out, initial[ind]) // or track per-source values
+
+		if len(streams[ind]) == 0 {
+			tree.Kill()
+		} else {
+			initial[ind] = streams[ind][0]
+			tree.Upd(initial[ind])
+			streams[ind] = streams[ind][1:]
+		}
+		ind, ok = tree.Pop()
+	}
+	return out
+}
+```
