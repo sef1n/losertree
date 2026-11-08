@@ -84,7 +84,7 @@ func TestPop(t *testing.T) {
 				if ind != want.ind {
 					t.Errorf("step %d: ind=%d want %d", i, ind, want.ind)
 				}
-				if got := tree.leafs[ind].v; got != want.cur {
+				if got := tree.leaves[ind].v; got != want.cur {
 					t.Errorf("step %d: val=%d want %d", i, got, want.cur)
 				}
 
@@ -111,13 +111,13 @@ func TestKill(t *testing.T) {
 
 	tree.Kill()
 
-	if tree.leafs[0].alive {
+	if tree.leaves[0].alive {
 		t.Error("leaf 1 still alive after Kill")
 	}
-	if tree.leafs[0].v != math.MaxInt {
-		t.Errorf("leaf 1 v = %d, want MaxInt", tree.leafs[1].v)
+	if tree.leaves[0].v != math.MaxInt {
+		t.Errorf("leaf 1 v = %d, want MaxInt", tree.leaves[1].v)
 	}
-	if !tree.leafs[1].alive || !tree.leafs[2].alive {
+	if !tree.leaves[1].alive || !tree.leaves[2].alive {
 		t.Error("Kill(1) affected other leaves")
 	}
 
@@ -136,10 +136,10 @@ func TestUpd(t *testing.T) {
 	tree, _, _ := Init([]int{1, 2, 3})
 
 	tree.Upd(100)
-	if tree.leafs[0].v != 100 {
-		t.Errorf("leaf 1 v = %d, want 100", tree.leafs[1].v)
+	if tree.leaves[0].v != 100 {
+		t.Errorf("leaf 1 v = %d, want 100", tree.leaves[1].v)
 	}
-	if !tree.leafs[0].alive {
+	if !tree.leaves[0].alive {
 		t.Error("Upd killed the leaf")
 	}
 

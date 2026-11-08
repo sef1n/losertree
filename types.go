@@ -35,8 +35,8 @@ type LoserTree struct {
 	// nodes stores the indices of leaves.
 	nodes []leafInd
 
-	// leafs are the comparison participants.
-	leafs []leaf
+	// leaves are the comparison participants.
+	leaves []leaf
 
 	// winner is the current minimum, exposed to the caller.
 	winner Winner

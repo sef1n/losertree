@@ -20,14 +20,14 @@ func Init(values []int) (t *LoserTree, ind leafInd, ok bool) {
 	}
 	t, ext := initiateStruct(values)
 
-	leafs := t.leafs
+	leaves := t.leaves
 	nodes := t.nodes
 	winners := make([]leafInd, ext*2)
 	copy(winners[ext:], t.nodes[ext:])
 
 	for p := ext - 1; p >= 1; p-- {
 		i, j := winners[p*2], winners[p*2+1]
-		winner, loser := initBattle(leafs[i], leafs[j], i, j)
+		winner, loser := initBattle(leaves[i], leaves[j], i, j)
 
 		winners[p] = winner
 		nodes[p] = loser
@@ -47,19 +47,19 @@ func initiateStruct(values []int) (*LoserTree, int) {
 	}
 
 	lt := LoserTree{
-		leafs: make([]leaf, ext),
-		nodes: make([]leafInd, ext*2),
+		leaves: make([]leaf, ext),
+		nodes:  make([]leafInd, ext*2),
 	}
 
-	// Переносим значения в lt.leafs
+	// Переносим значения в lt.leaves
 	for i, val := range values {
-		lt.leafs[i].v = val
-		lt.leafs[i].alive = true
+		lt.leaves[i].v = val
+		lt.leaves[i].alive = true
 	}
 
-	// Дополняем lt.leafs inf
+	// Дополняем lt.leaves inf
 	for i := len(values); i < ext; i++ {
-		lt.leafs[i].v = math.MaxInt
+		lt.leaves[i].v = math.MaxInt
 	}
 
 	// Переносим индексы в дерево

@@ -13,10 +13,10 @@ func (t *LoserTree) String() string {
 	}
 
 	var sb strings.Builder
-	sb.Grow(64 + 32*len(t.nodes) + 32*len(t.leafs))
+	sb.Grow(64 + 32*len(t.nodes) + 32*len(t.leaves))
 
-	fmt.Fprint(&sb, "{\nLeafs: {")
-	for i, l := range t.leafs {
+	fmt.Fprint(&sb, "{\nLeaves: {")
+	for i, l := range t.leaves {
 		if i > 0 {
 			fmt.Fprint(&sb, " ")
 		}
