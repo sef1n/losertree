@@ -3,7 +3,7 @@
 // Fairness contract with benchmarks/goloser:
 //   - both benchmarks are named BenchmarkMergePop
 //   - both have identical sub-names k=%d,n=%d
-//   - both do exactly k*(n-1) merge steps per b.N iteration
+//   - both do exactly k*n merge steps per b.N iteration
 //   - both exclude tree construction from the timed section
 package ltree_bench_test
 
@@ -19,8 +19,6 @@ func BenchmarkMergePop(b *testing.B) {
 		for _, n := range []int{100, 1_000} {
 			b.Run(fmt.Sprintf("k=%d,n=%d", k, n), func(b *testing.B) {
 				template := makeLeafs(k, n)
-				iters := k * (n - 1)
-
 				b.ResetTimer()
 				for i := 0; i < b.N; i++ {
 					b.StopTimer()
@@ -33,7 +31,7 @@ func BenchmarkMergePop(b *testing.B) {
 					tree, ind, ok := losertree.Init(initial)
 					b.StartTimer()
 
-					for j := 0; j < iters && ok; j++ {
+					for ok {
 						if len(leafs[ind]) > 0 {
 							tree.Upd(leafs[ind][0])
 							leafs[ind] = leafs[ind][1:]

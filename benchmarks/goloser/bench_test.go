@@ -72,7 +72,7 @@ func makeSeqs(k, n int) []*seq {
 		for j := range vals {
 			vals[j] = i*n + j
 		}
-		seqs[i] = &seq{cur: vals[0], rest: vals[1:]}
+		seqs[i] = &seq{cur: -1, rest: vals}
 	}
 	return seqs
 }
@@ -91,7 +91,7 @@ func genInitial(k int) []*seq {
 	initial := make([]*seq, k)
 	for i := range k {
 		vals := []int{i}
-		initial[i] = &seq{cur: vals[0], rest: []int{}}
+		initial[i] = &seq{cur: -1, rest: vals}
 	}
 	return initial
 }
