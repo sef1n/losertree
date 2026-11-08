@@ -54,9 +54,20 @@ func (t *LoserTree) Pop() (ind leafInd, ok bool) {
 
 	for i := (winner + len(leafs)) >> 1; i > 0; i >>= 1 {
 		opp := nodes[i]
-		winner, nodes[i] = battle(leafs[winner], leafs[opp], winner, opp)
+		winner, nodes[i] = popBattle(leafs[winner], leafs[opp], winner, opp)
 	}
 
 	t.winner.I, t.winner.valid = winner, leafs[winner].alive
 	return winner, t.winner.valid
+}
+
+// popBattle сравнивает значения. Объявляет победителем меньшее значение.
+// Функция нестабильна при сортировке двух бесконечно больших значений -
+// первый параметр не обязательно будет победителем.
+func popBattle(i, j leaf, ii, ji leafInd) (winner, loser leafInd) {
+	if j.v < i.v || !i.alive {
+		return ji, ii
+	}
+
+	return ii, ji
 }

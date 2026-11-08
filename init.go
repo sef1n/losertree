@@ -27,7 +27,7 @@ func Init(values []int) (t *LoserTree, ind leafInd, ok bool) {
 
 	for p := ext - 1; p >= 1; p-- {
 		i, j := winners[p*2], winners[p*2+1]
-		winner, loser := battle(leafs[i], leafs[j], i, j)
+		winner, loser := initBattle(leafs[i], leafs[j], i, j)
 
 		winners[p] = winner
 		nodes[p] = loser
@@ -69,15 +69,9 @@ func initiateStruct(values []int) (*LoserTree, int) {
 	return &lt, ext
 }
 
-// battle сравнивает значения. Объявляет победителем меньшее значение
-// Значения с ind == -1 считаются бесконечно большими и могут проиграть
-// только таким же значениям.
-// Функция нестабильна при сортировке двух бесконечно больших значений -
-// первый параметр не обязательно будет победителем.
-func battle(i, j leaf, ii, ji leafInd) (winner, loser leafInd) {
-	if j.v < i.v || !i.alive {
+func initBattle(i, j leaf, ii, ji leafInd) (winner, loser leafInd) {
+	if j.v < i.v {
 		return ji, ii
 	}
-
 	return ii, ji
 }
