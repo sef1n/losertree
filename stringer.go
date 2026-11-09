@@ -43,6 +43,6 @@ func (t *LoserTree) String() string {
 		fmt.Fprint(&sb, "\n")
 	}
 
-	fmt.Fprintf(&sb, "}\nWinner: {I:%d, valid:%v}}", t.winner.I, t.winner.valid)
+	fmt.Fprintf(&sb, "}\nwinner: {I:%d, valid:%v}}", t.winner.I, t.winner.valid)
 	return sb.String()
 }
