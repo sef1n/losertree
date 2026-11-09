@@ -90,8 +90,8 @@ func TestInit(t *testing.T) {
 				},
 				nodes: []leafInd{
 					0,
-					4, 2, 7,
-					1, 3, 5, 6,
+					4, 2, 6,
+					1, 3, 5, 7,
 					0, 1, 2, 3, 4, 5, 6, 7,
 				},
 				winner: winner{I: 0, valid: true},
@@ -109,8 +109,8 @@ func TestInit(t *testing.T) {
 				},
 				nodes: []leafInd{
 					0,
-					4, 1, 7,
-					0, 2, 5, 6,
+					4, 1, 6,
+					0, 2, 5, 7,
 					0, 1, 2, 3, 4, 5, 6, 7,
 				},
 				winner: winner{I: 3, valid: true},
