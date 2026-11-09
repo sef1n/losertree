@@ -24,7 +24,7 @@ func TestInit(t *testing.T) {
 			want: &LoserTree{
 				leaves: []leaf{rn(42)},
 				nodes:  []leafInd{0, 0},
-				winner: Winner{I: 0, valid: true},
+				winner: winner{I: 0, valid: true},
 			},
 		},
 		{
@@ -33,7 +33,7 @@ func TestInit(t *testing.T) {
 			want: &LoserTree{
 				leaves: []leaf{rn(1), rn(2)},
 				nodes:  []leafInd{0, 1, 0, 1},
-				winner: Winner{I: 0, valid: true},
+				winner: winner{I: 0, valid: true},
 			},
 		},
 		{
@@ -42,7 +42,7 @@ func TestInit(t *testing.T) {
 			want: &LoserTree{
 				leaves: []leaf{rn(2), rn(1)},
 				nodes:  []leafInd{0, 0, 0, 1},
-				winner: Winner{I: 1, valid: true},
+				winner: winner{I: 1, valid: true},
 			},
 		},
 		{
@@ -51,7 +51,7 @@ func TestInit(t *testing.T) {
 			want: &LoserTree{
 				leaves: []leaf{rn(3), rn(2), rn(1), inf()},
 				nodes:  []leafInd{0, 1, 0, 3, 0, 1, 2, 3},
-				winner: Winner{I: 2, valid: true},
+				winner: winner{I: 2, valid: true},
 			},
 		},
 		{
@@ -60,7 +60,7 @@ func TestInit(t *testing.T) {
 			want: &LoserTree{
 				leaves: []leaf{rn(1), rn(1), rn(1), inf()},
 				nodes:  []leafInd{0, 2, 1, 3, 0, 1, 2, 3},
-				winner: Winner{I: 0, valid: true},
+				winner: winner{I: 0, valid: true},
 			},
 		},
 		{
@@ -69,7 +69,7 @@ func TestInit(t *testing.T) {
 			want: &LoserTree{
 				leaves: []leaf{rn(4), rn(3), rn(2), rn(1)},
 				nodes:  []leafInd{0, 1, 0, 2, 0, 1, 2, 3},
-				winner: Winner{I: 3, valid: true},
+				winner: winner{I: 3, valid: true},
 			},
 		},
 		{
@@ -78,7 +78,7 @@ func TestInit(t *testing.T) {
 			want: &LoserTree{
 				leaves: []leaf{rn(5), rn(5), rn(5), rn(5)},
 				nodes:  []leafInd{0, 2, 1, 3, 0, 1, 2, 3},
-				winner: Winner{I: 0, valid: true},
+				winner: winner{I: 0, valid: true},
 			},
 		},
 		{
@@ -94,7 +94,7 @@ func TestInit(t *testing.T) {
 					1, 3, 5, 6,
 					0, 1, 2, 3, 4, 5, 6, 7,
 				},
-				winner: Winner{I: 0, valid: true},
+				winner: winner{I: 0, valid: true},
 			},
 		},
 		{
@@ -113,7 +113,7 @@ func TestInit(t *testing.T) {
 					0, 2, 5, 6,
 					0, 1, 2, 3, 4, 5, 6, 7,
 				},
-				winner: Winner{I: 3, valid: true},
+				winner: winner{I: 3, valid: true},
 			},
 		},
 		{
@@ -122,7 +122,7 @@ func TestInit(t *testing.T) {
 			want: &LoserTree{
 				leaves: []leaf{rn(math.MaxInt)},
 				nodes:  []leafInd{0, 0},
-				winner: Winner{I: 0, valid: true},
+				winner: winner{I: 0, valid: true},
 			},
 		},
 	}
