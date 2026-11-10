@@ -11,9 +11,9 @@ import (
 // Otherwise it returns the [*LoserTree], the index of the winning leaf, and ok.
 // Both the [*LoserTree] and the index are meaningful only when ok is true.
 //
-// Init copies the input values and pads the leaf slice with dead entries to
+// Init copies the input values and pads the leaves slice with dead entries to
 // the smallest power of two not less than len(values).
-// The nodes storage is twice the length of leaf storage.
+// The nodes slice is twice as long as the leaves slice
 func Init(values []int) (t *LoserTree, ind leafInd, ok bool) {
 	if values == nil || len(values) == 0 {
 		return // nil, 0, false
@@ -39,8 +39,7 @@ func Init(values []int) (t *LoserTree, ind leafInd, ok bool) {
 }
 
 func initiateStruct(values []int) (*LoserTree, int) {
-	// Вычисляем длину начального уровня
-	// вместе с +inf значениями
+	// len of lt.leaves with sentinels
 	ext := 1
 	for ext < len(values) {
 		ext <<= 1
@@ -51,24 +50,30 @@ func initiateStruct(values []int) (*LoserTree, int) {
 		nodes:  make([]leafInd, ext*2),
 	}
 
-	// Переносим значения в lt.leaves
+	// vals of values to lt.leaves vals
 	for i, val := range values {
 		lt.leaves[i].v = val
 		lt.leaves[i].alive = true
 	}
 
-	// Дополняем lt.leaves inf
+	// create sentinels
 	for i := len(values); i < ext; i++ {
 		lt.leaves[i].v = math.MaxInt
 	}
 
-	// Переносим индексы в дерево
+	// fill start level of tree with indexes
 	for i := 0; i < ext; i++ {
 		lt.nodes[ext+i] = i
 	}
 	return &lt, ext
 }
 
+// initBattle compares only the v fields of leaf structs and returns the winner and loser indices.
+//
+// Used during Init; faster because it skips the alive check.
+//
+// It is safe to call only during Init, before the first Kill or Upd call, because
+// of the layout invariant maintained during Init: a sentinel can't be on the left side of an alive leaf.
 func initBattle(i, j leaf, ii, ji leafInd) (winner, loser leafInd) {
 	if j.v < i.v {
 		return ji, ii
