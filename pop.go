@@ -61,9 +61,16 @@ func (t *LoserTree) Pop() (ind leafInd, ok bool) {
 	return winner, t.winner.valid
 }
 
-// popBattle сравнивает значения. Объявляет победителем меньшее значение.
-// Функция нестабильна при сортировке двух бесконечно больших значений -
-// первый параметр не обязательно будет победителем.
+// initBattle compares v of both leaves and checks alive of the first operand only.
+// It returns the winner and loser indices.
+//
+// Used by Pop; checks alive of the first operand so killed leaves do not win alive leaves.
+//
+// WARN: A sentinel j with v < i.v can win even though j.alive is false;
+// this is safe only while the invariant dead >> v == math.MaxInt holds.
+// (check Upd doc)
+//
+// If both operands are sentinels, the winner is arbitrary.
 func popBattle(i, j leaf, ii, ji leafInd) (winner, loser leafInd) {
 	if j.v < i.v || !i.alive {
 		return ji, ii
