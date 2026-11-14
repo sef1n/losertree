@@ -41,7 +41,7 @@ func (t *LoserTree) Kill() {
 //
 // Pop panics if t is nil.
 func (t *LoserTree) Pop() (ind leafInd, ok bool) {
-	// NOTE: без проверки выигрыш на малых k
+	// NOTE: without checking the gain on small k
 	// if !t.winner.valid {
 	// 	return 0, false
 	// }
