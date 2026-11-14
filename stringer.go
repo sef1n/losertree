@@ -5,8 +5,8 @@ import (
 	"strings"
 )
 
-// String форматирует дерево для отладки.
-// Уровни печатаются от корня (L#0) вниз; nodes[0] не используется.
+// String formats the tree for debugging.
+// Levels are printed from the root (L#0) down; nodes[0] is not used.
 func (t *LoserTree) String() string {
 	if t == nil {
 		return "{<nil LoserTree>}"
@@ -25,7 +25,7 @@ func (t *LoserTree) String() string {
 	fmt.Fprint(&sb, "};\nNodes: {\n")
 
 	level := 0
-	levelStart := 1 // nodes[1] — начало уровня 0
+	levelStart := 1 // 0th level begin
 	for i := 1; i < len(t.nodes); i++ {
 		if i == levelStart {
 			if i > 1 {
