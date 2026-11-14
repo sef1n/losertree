@@ -98,9 +98,10 @@ func TestInit(t *testing.T) {
 			},
 		},
 		{
-			// Регрессия на баг: winner.I = 3, nodes[3] = 7 (padding, dead).
-			// Старая формула lt.winner.valid = leafs[nodes[winner.I]].alive
-			// давала здесь false, хотя победитель — живой лист 3.
+			// Regression test for the bug where winner.I = 3 but nodes[3] = 7
+			// (padding, dead). The old formula
+			//     lt.winner.valid = leafs[nodes[winner.I]].alive
+			// returned false here, even though the winner is live leaf 3.
 			name: "k=5 winner at leaf 3, nodes[3] is padding loser",
 			in:   []int{5, 3, 2, 1, 4},
 			want: &LoserTree{
@@ -134,7 +135,9 @@ func TestInit(t *testing.T) {
 				t.Errorf("Init() mismatch\n got: %+v\nwant: %+v", got, test.want)
 			}
 
-			// Значения в дереве и в return не должны различаться, но на случай изменения логики:
+			// Sanity check: the returned (ind, ok) must match the tree's
+			// internal winner state. Guards against future refactors that
+			// decouple the return values from the stored winner.
 			if got != nil {
 				if wI != test.want.winner.I || wV != test.want.winner.valid {
 					t.Errorf("Got (ind:%v,valid:%v), want (ind:%v,valid:%v)",

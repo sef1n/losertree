@@ -97,7 +97,8 @@ func TestPop(t *testing.T) {
 				ind, ok = tree.Pop()
 			}
 
-			// Повторный Pop на исчерпанном дереве — no-op, не паника.
+			// Calling Pop on an exhausted tree must be a no-op (0, false),
+			// not a panic and not a stale winner.
 			if _, ok := tree.Pop(); ok {
 				t.Error("Pop on exhausted tree should return ok=false")
 			}
@@ -105,47 +106,52 @@ func TestPop(t *testing.T) {
 	}
 }
 
-// TestKill — регрессия на баг, когда Kill через копию leaf был no-op.
+// TestKill is a regression test for a bug where Kill used a leaf copy
+// (l := t.leaves[i]; l.alive = false) instead of mutating the slice,
+// leaving the tree unchanged. Verifies that Kill marks the winner dead,
+// sets its value to MaxInt, leaves other leaves untouched, and that Pop
+// advances to the next live winner.
 func TestKill(t *testing.T) {
 	tree, _, _ := Init([]int{1, 2, 3})
 
-	tree.Kill()
+	tree.Kill() // winner is leaf 0 with value 1
 
 	if tree.leaves[0].alive {
-		t.Error("leaf 1 still alive after Kill")
+		t.Error("leaf 0 still alive after Kill")
 	}
 	if tree.leaves[0].v != math.MaxInt {
-		t.Errorf("leaf 1 v = %d, want MaxInt", tree.leaves[1].v)
+		t.Errorf("leaf 0 v = %d, want MaxInt", tree.leaves[0].v)
 	}
 	if !tree.leaves[1].alive || !tree.leaves[2].alive {
-		t.Error("Kill(1) affected other leaves")
+		t.Error("Kill affected leaves other than the current winner")
 	}
 
-	// Дерево должно пересчитать победителя после Pop.
+	// After Kill, Pop must re-sort the tree and return the next live winner.
 	ind, ok := tree.Pop()
 	if !ok {
-		t.Fatal("Peek after Kill+Pop returned ok=false")
+		t.Fatal("Pop after Kill returned ok=false, want a new winner")
 	}
 	if ind != 1 {
 		t.Errorf("winner ind = %d, want 1", ind)
 	}
 }
 
-// TestUpd — обновление значения не трогает alive и не ломает порядок.
+// TestUpd verifies that Upd replaces the winner's value without touching
+// its alive flag, and that the change propagates to the tree on the next Pop.
 func TestUpd(t *testing.T) {
 	tree, _, _ := Init([]int{1, 2, 3})
 
-	tree.Upd(100)
+	tree.Upd(100) // winner is leaf 0; raise its value to 100
 	if tree.leaves[0].v != 100 {
-		t.Errorf("leaf 1 v = %d, want 100", tree.leaves[1].v)
+		t.Errorf("leaf 0 v = %d, want 100", tree.leaves[0].v)
 	}
 	if !tree.leaves[0].alive {
-		t.Error("Upd killed the leaf")
+		t.Error("Upd marked the leaf dead")
 	}
 
-	// Новый победитель - [1]
+	// After raising leaf 0 to 100, the new winner should be leaf 1 (value 2).
 	ind, ok := tree.Pop()
 	if !ok || ind != 1 {
-		t.Errorf("Peek = (%d, %v), want (1, true)", ind, ok)
+		t.Errorf("Pop = (%d, %v), want (1, true)", ind, ok)
 	}
 }
