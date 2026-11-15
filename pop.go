@@ -7,6 +7,8 @@ import (
 	"unsafe"
 )
 
+// WARN: obsolete docs
+
 // Upd sets the value of the current winning leaf to next.
 // It does not modify alive.
 // It does not update the tree; call Pop afterwards to recompute the winner.
@@ -18,7 +20,8 @@ import (
 // This can make Pop return inconsistent results (including ok=false while alive leaves remain).
 // Do not call Upd on a leaf after Kill.
 func (t *LoserTree) Upd(next int) {
-	t.leaves[t.winner.I].v = next
+	leaves := unsafe.SliceData(t.leaves)
+	(*(*leaf)(unsafe.Add(unsafe.Pointer(leaves), uintptr(t.winner.I)*unsafe.Sizeof(*leaves)))).v = next
 }
 
 // TODO: revive func?
@@ -30,7 +33,8 @@ func (t *LoserTree) Upd(next int) {
 //
 // Kill panics if t is nil.
 func (t *LoserTree) Kill() {
-	t.leaves[t.winner.I] = leaf{v: math.MaxInt}
+	leaves := unsafe.SliceData(t.leaves)
+	*(*leaf)(unsafe.Add(unsafe.Pointer(leaves), uintptr(t.winner.I)*unsafe.Sizeof(*leaves))) = leaf{v: math.MaxInt}
 }
 
 // Pop updates the tree's winner and the path from the winning leaf to the root.
