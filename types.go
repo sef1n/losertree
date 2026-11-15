@@ -16,7 +16,7 @@ type leaf struct {
 }
 
 // leafInd is an alias for int introduced for readability.
-type leafInd = int
+type leafInd int
 
 // winner describes the current minimum among alive leaves.
 // It holds the index of the winning leaf for value updation
@@ -36,10 +36,12 @@ type winner struct {
 // The overall winner is kept in the winner field.
 type LoserTree struct {
 	// nodes stores the indices of leaves.
-	nodes []leafInd
+	nodes      *leafInd
+	nodesSlice []leafInd
 
 	// leaves are the comparison participants.
-	leaves []leaf
+	leaves      *leaf
+	leavesSlice []leaf
 
 	// winner is the current minimum, exposed to the caller.
 	winner winner

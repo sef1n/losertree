@@ -4,6 +4,7 @@ package losertree
 
 import (
 	"math"
+	"unsafe"
 )
 
 // Init creates a LoserTree from the given values.
@@ -24,17 +25,19 @@ func Init(values []int) (t *LoserTree, ind leafInd, ok bool) {
 
 	leaves := t.leaves
 	nodes := t.nodes
-	winners := make([]leafInd, ext*2)
-	copy(winners[ext:], t.nodes[ext:])
+
+	winnersSlice := make([]leafInd, ext*2)
+	winners := unsafe.SliceData(winnersSlice)
+	copy(winnersSlice[ext:], t.nodesSlice[ext:])
 
 	for p := ext - 1; p >= 1; p-- {
-		i, j := winners[p*2], winners[p*2+1]
-		winner, loser := initBattle(leaves[i], leaves[j], i, j)
+		i, j := *winners.unsafeI(p * 2), *winners.unsafeI(p*2 + 1)
+		winner, loser := initBattle(*leaves.unsafeI(i), *leaves.unsafeI(j), i, j)
 
-		winners[p] = winner
-		nodes[p] = loser
+		*winners.unsafeI(p) = winner
+		*nodes.unsafeI(p) = loser
 	}
-	t.winner.I = winners[1]
+	t.winner.I = *winners.unsafeI(1)
 	t.winner.valid = true
 
 	return t, t.winner.I, t.winner.valid
@@ -48,24 +51,26 @@ func initiateStruct(values []int) (*LoserTree, int) {
 	}
 
 	lt := LoserTree{
-		leaves: make([]leaf, ext),
-		nodes:  make([]leafInd, ext*2),
+		leavesSlice: make([]leaf, ext),
+		nodesSlice:  make([]leafInd, ext*2),
 	}
+	lt.leaves = unsafe.SliceData(lt.leavesSlice)
+	lt.nodes = unsafe.SliceData(lt.nodesSlice)
 
 	// vals of values to lt.leaves vals
 	for i, val := range values {
-		lt.leaves[i].v = val
-		lt.leaves[i].alive = true
+		lt.leaves.unsafeI(leafInd(i)).v = val
+		lt.leaves.unsafeI(leafInd(i)).alive = true
 	}
 
 	// create sentinels
 	for i := len(values); i < ext; i++ {
-		lt.leaves[i].v = math.MaxInt
+		lt.leaves.unsafeI(leafInd(i)).v = math.MaxInt
 	}
 
 	// fill start level of tree with indexes
 	for i := 0; i < ext; i++ {
-		lt.nodes[ext+i] = i
+		*lt.nodes.unsafeI(ext + i) = leafInd(i)
 	}
 	return &lt, ext
 }

@@ -4,7 +4,6 @@ package losertree
 
 import (
 	"math"
-	"unsafe"
 )
 
 // WARN: obsolete docs
@@ -20,8 +19,7 @@ import (
 // This can make Pop return inconsistent results (including ok=false while alive leaves remain).
 // Do not call Upd on a leaf after Kill.
 func (t *LoserTree) Upd(next int) {
-	leaves := unsafe.SliceData(t.leaves)
-	(*(*leaf)(unsafe.Add(unsafe.Pointer(leaves), uintptr(t.winner.I)*unsafe.Sizeof(*leaves)))).v = next
+	t.leaves.unsafeI(t.winner.I).v = next
 }
 
 // TODO: revive func?
@@ -33,8 +31,7 @@ func (t *LoserTree) Upd(next int) {
 //
 // Kill panics if t is nil.
 func (t *LoserTree) Kill() {
-	leaves := unsafe.SliceData(t.leaves)
-	*(*leaf)(unsafe.Add(unsafe.Pointer(leaves), uintptr(t.winner.I)*unsafe.Sizeof(*leaves))) = leaf{v: math.MaxInt}
+	*t.leaves.unsafeI(t.winner.I) = leaf{v: math.MaxInt}
 }
 
 // Pop updates the tree's winner and the path from the winning leaf to the root.
@@ -55,22 +52,21 @@ func (t *LoserTree) Pop() (ind leafInd, ok bool) {
 	// 	return 0, false
 	// }
 
-	ll := len(t.leaves)
-	leaves := unsafe.SliceData(t.leaves)
+	leaves := t.leaves
+	nodes := t.nodes
 	winnerS := t.winner
-	nodes := unsafe.SliceData(t.nodes)
 
 	winner := winnerS.I
 
-	for i := (winner + ll) >> 1; i > 0; i >>= 1 {
-		opp := *(*leafInd)(unsafe.Add(unsafe.Pointer(nodes), uintptr(i)*unsafe.Sizeof(*nodes)))
+	for i := (int(winner) + len(t.leavesSlice)) >> 1; i > 0; i >>= 1 {
+		opp := *nodes.unsafeI(i)
 		// opp := nodes[i]
-		winner, *(*leafInd)(unsafe.Add(unsafe.Pointer(nodes), uintptr(i)*unsafe.Sizeof(*nodes))) = popBattle(
-			*(*leaf)(unsafe.Add(unsafe.Pointer(leaves), uintptr(winner)*unsafe.Sizeof(*leaves))), *(*leaf)(unsafe.Add(unsafe.Pointer(leaves), uintptr(opp)*unsafe.Sizeof(*leaves))),
+		winner, *nodes.unsafeI(i) = popBattle(
+			*leaves.unsafeI(winner), *leaves.unsafeI(opp),
 			winner, opp)
 	}
 
-	t.winner.I, t.winner.valid = winner, (*(*leaf)(unsafe.Add(unsafe.Pointer(leaves), uintptr(winner)*unsafe.Sizeof(*leaves)))).alive
+	t.winner.I, t.winner.valid = winner, leaves.unsafeI(winner).alive
 	return winner, t.winner.valid
 }
 
