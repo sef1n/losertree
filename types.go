@@ -1,3 +1,4 @@
+// Package losertree implements a loser tree for efficient k-way merging.
 package losertree
 
 // leaf is a participant of a LoserTree.

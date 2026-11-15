@@ -1,6 +1,11 @@
+//go:build !safe
+
 package losertree
 
-import "math"
+import (
+	"math"
+	"unsafe"
+)
 
 // Upd sets the value of the current winning leaf to next.
 // It does not modify alive.
@@ -46,18 +51,22 @@ func (t *LoserTree) Pop() (ind leafInd, ok bool) {
 	// 	return 0, false
 	// }
 
-	leaves := t.leaves
+	ll := len(t.leaves)
+	leaves := unsafe.SliceData(t.leaves)
 	winnerS := t.winner
-	nodes := t.nodes
+	nodes := unsafe.SliceData(t.nodes)
 
 	winner := winnerS.I
 
-	for i := (winner + len(leaves)) >> 1; i > 0; i >>= 1 {
-		opp := nodes[i]
-		winner, nodes[i] = popBattle(leaves[winner], leaves[opp], winner, opp)
+	for i := (winner + ll) >> 1; i > 0; i >>= 1 {
+		opp := *(*leafInd)(unsafe.Add(unsafe.Pointer(nodes), uintptr(i)*unsafe.Sizeof(*nodes)))
+		// opp := nodes[i]
+		winner, *(*leafInd)(unsafe.Add(unsafe.Pointer(nodes), uintptr(i)*unsafe.Sizeof(*nodes))) = popBattle(
+			*(*leaf)(unsafe.Add(unsafe.Pointer(leaves), uintptr(winner)*unsafe.Sizeof(*leaves))), *(*leaf)(unsafe.Add(unsafe.Pointer(leaves), uintptr(opp)*unsafe.Sizeof(*leaves))),
+			winner, opp)
 	}
 
-	t.winner.I, t.winner.valid = winner, leaves[winner].alive
+	t.winner.I, t.winner.valid = winner, (*(*leaf)(unsafe.Add(unsafe.Pointer(leaves), uintptr(winner)*unsafe.Sizeof(*leaves)))).alive
 	return winner, t.winner.valid
 }
 
