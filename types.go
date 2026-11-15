@@ -1,3 +1,5 @@
+//go:build !safe
+
 // Package losertree implements a loser tree for efficient k-way merging.
 package losertree
 

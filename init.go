@@ -1,3 +1,5 @@
+//go:build !safe
+
 package losertree
 
 import (
