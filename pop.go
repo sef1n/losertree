@@ -19,7 +19,7 @@ import (
 // This can make Pop return inconsistent results (including ok=false while alive leaves remain).
 // Do not call Upd on a leaf after Kill.
 func (t *LoserTree) Upd(next int) {
-	t.leaves.unsafeI(t.winner.I).v = next
+	t.leaves.ind(t.winner.I).v = next
 }
 
 // TODO: revive func?
@@ -31,7 +31,7 @@ func (t *LoserTree) Upd(next int) {
 //
 // Kill panics if t is nil.
 func (t *LoserTree) Kill() {
-	*t.leaves.unsafeI(t.winner.I) = leaf{v: math.MaxInt}
+	*t.leaves.ind(t.winner.I) = leaf{v: math.MaxInt}
 }
 
 // Pop updates the tree's winner and the path from the winning leaf to the root.
@@ -59,14 +59,14 @@ func (t *LoserTree) Pop() (ind leafInd, ok bool) {
 	winner := winnerS.I
 
 	for i := (int(winner) + len(t.leavesSlice)) >> 1; i > 0; i >>= 1 {
-		opp := *nodes.unsafeI(i)
+		opp := *nodes.ind(i)
 		// opp := nodes[i]
-		winner, *nodes.unsafeI(i) = popBattle(
-			*leaves.unsafeI(winner), *leaves.unsafeI(opp),
+		winner, *nodes.ind(i) = popBattle(
+			*leaves.ind(winner), *leaves.ind(opp),
 			winner, opp)
 	}
 
-	t.winner.I, t.winner.valid = winner, leaves.unsafeI(winner).alive
+	t.winner.I, t.winner.valid = winner, leaves.ind(winner).alive
 	return winner, t.winner.valid
 }
 

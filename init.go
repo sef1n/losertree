@@ -4,7 +4,6 @@ package losertree
 
 import (
 	"math"
-	"unsafe"
 )
 
 // Init creates a LoserTree from the given values.
@@ -21,58 +20,58 @@ func Init(values []int) (t *LoserTree, ind leafInd, ok bool) {
 	if values == nil || len(values) == 0 {
 		return // nil, 0, false
 	}
-	t, ext := initiateStruct(values)
+	leavesSlice, nodesSlice, ext := initiateSlices(values)
 
-	leaves := t.leaves
-	nodes := t.nodes
+	leaves := sliceLeaf(leavesSlice)
+	nodes := sliceLeafInd(nodesSlice)
 
-	winnersSlice := make([]leafInd, ext*2)
-	winners := unsafe.SliceData(winnersSlice)
-	copy(winnersSlice[ext:], t.nodesSlice[ext:])
+	winners := newFilledNodes(ext*2, nodesSlice)
 
 	for p := ext - 1; p >= 1; p-- {
-		i, j := *winners.unsafeI(p * 2), *winners.unsafeI(p*2 + 1)
-		winner, loser := initBattle(*leaves.unsafeI(i), *leaves.unsafeI(j), i, j)
+		i, j := *winners.ind(p * 2), *winners.ind(p*2 + 1)
+		winner, loser := initBattle(*leaves.ind(i), *leaves.ind(j), i, j)
 
-		*winners.unsafeI(p) = winner
-		*nodes.unsafeI(p) = loser
+		*winners.ind(p) = winner
+		*nodes.ind(p) = loser
 	}
+	t = &LoserTree{}
 	t.winner.I = *winners.unsafeI(1)
 	t.winner.valid = true
+
+	t.leavesSlice = leavesSlice
+	t.nodesSlice = nodesSlice
+	t.leaves = leaves
+	t.nodes = nodes
 
 	return t, t.winner.I, t.winner.valid
 }
 
-func initiateStruct(values []int) (*LoserTree, int) {
+func initiateSlices(values []int) ([]leaf, []leafInd, int) {
 	// len of lt.leaves with sentinels
 	ext := 1
 	for ext < len(values) {
 		ext <<= 1
 	}
 
-	lt := LoserTree{
-		leavesSlice: make([]leaf, ext),
-		nodesSlice:  make([]leafInd, ext*2),
-	}
-	lt.leaves = unsafe.SliceData(lt.leavesSlice)
-	lt.nodes = unsafe.SliceData(lt.nodesSlice)
+	leaves := make([]leaf, ext)
+	nodes := make([]leafInd, ext*2)
 
 	// vals of values to lt.leaves vals
 	for i, val := range values {
-		lt.leaves.unsafeI(leafInd(i)).v = val
-		lt.leaves.unsafeI(leafInd(i)).alive = true
+		leaves[i].v = val
+		leaves[i].alive = true
 	}
 
 	// create sentinels
 	for i := len(values); i < ext; i++ {
-		lt.leaves.unsafeI(leafInd(i)).v = math.MaxInt
+		leaves[i].v = math.MaxInt
 	}
 
 	// fill start level of tree with indexes
 	for i := 0; i < ext; i++ {
-		*lt.nodes.unsafeI(ext + i) = leafInd(i)
+		nodes[ext+i] = leafInd(i)
 	}
-	return &lt, ext
+	return leaves, nodes, ext
 }
 
 // initBattle compares only the v fields of leaf structs and returns the winner and loser indices.
