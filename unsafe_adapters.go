@@ -2,6 +2,14 @@ package losertree
 
 import "unsafe"
 
+func sliceLeafInd(s []leafInd) *leafInd {
+	return unsafe.SliceData(s)
+}
+
+func sliceLeaf(s []leaf) *leaf {
+	return unsafe.SliceData(s)
+}
+
 func newNodes(l int) *leafInd {
 	return unsafe.SliceData(make([]leafInd, l))
 }
