@@ -25,7 +25,9 @@ func Init(values []int) (t *LoserTree, ind leafInd, ok bool) {
 	leaves := sliceLeaf(leavesSlice)
 	nodes := sliceLeafInd(nodesSlice)
 
-	winners := newFilledNodes(ext*2, nodesSlice)
+	winnersSlice := make([]leafInd, ext*2)
+	copy(winnersSlice[ext:], nodesSlice[ext:])
+	winners := sliceLeafInd(winnersSlice)
 
 	for p := ext - 1; p >= 1; p-- {
 		i, j := *winners.ind(p * 2), *winners.ind(p*2 + 1)
@@ -34,6 +36,7 @@ func Init(values []int) (t *LoserTree, ind leafInd, ok bool) {
 		*winners.ind(p) = winner
 		*nodes.ind(p) = loser
 	}
+
 	t = &LoserTree{}
 	t.winner.I = *winners.unsafeI(1)
 	t.winner.valid = true
