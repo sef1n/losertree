@@ -38,7 +38,7 @@ func Init(values []int) (t *LoserTree, ind leafInd, ok bool) {
 	}
 
 	t = &LoserTree{}
-	t.winner = *winners.unsafeI(1)
+	t.winner = *winners.ind(1)
 
 	t.leavesSlice = leavesSlice
 	t.nodesSlice = nodesSlice
