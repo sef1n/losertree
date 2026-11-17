@@ -18,19 +18,6 @@ type leaf struct {
 // leafInd is an alias for int introduced for readability.
 type leafInd int
 
-// winner describes the current minimum among alive leaves.
-// It holds the index of the winning leaf for value updation
-// and a validity flag.
-//
-// I is only meaningful when valid is true.
-// A winner with valid == false means that all leaves have been
-// killed (the merge is exhausted) and must not be treated
-// as a real minimum. Callers should check valid before using I.
-type winner struct {
-	I     leafInd
-	valid bool
-}
-
 // LoserTree is a tournament tree in which each internal node
 // stores the index of the leaf that lost the comparison.
 // The overall winner is kept in the winner field.
@@ -44,5 +31,5 @@ type LoserTree struct {
 	leavesSlice []leaf
 
 	// winner is the current minimum, exposed to the caller.
-	winner winner
+	winner leafInd
 }

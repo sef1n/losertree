@@ -38,15 +38,15 @@ func Init(values []int) (t *LoserTree, ind leafInd, ok bool) {
 	}
 
 	t = &LoserTree{}
-	t.winner.I = *winners.unsafeI(1)
-	t.winner.valid = true
+	t.winner = *winners.unsafeI(1)
 
 	t.leavesSlice = leavesSlice
 	t.nodesSlice = nodesSlice
 	t.leaves = leaves
 	t.nodes = nodes
 
-	return t, t.winner.I, t.winner.valid
+	// TODO: Do we really need ok?
+	return t, t.winner, true
 }
 
 func initiateSlices(values []int) ([]leaf, []leafInd, int) {
