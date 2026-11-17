@@ -1,3 +1,5 @@
+//go:build !safe
+
 package losertree
 
 import "unsafe"
@@ -7,16 +9,6 @@ func sliceLeafInd(s []leafInd) *leafInd {
 }
 
 func sliceLeaf(s []leaf) *leaf {
-	return unsafe.SliceData(s)
-}
-
-func newNodes(l int) *leafInd {
-	return unsafe.SliceData(make([]leafInd, l))
-}
-
-func newFilledNodes(l int, filler []leafInd) *leafInd {
-	s := make([]leafInd, l)
-	copy(s, filler)
 	return unsafe.SliceData(s)
 }
 
