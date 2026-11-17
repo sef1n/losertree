@@ -16,40 +16,40 @@ import (
 // Init copies the input values and pads the leaves slice with dead entries to
 // the smallest power of two not less than len(values).
 // The nodes slice is twice as long as the leaves slice
-func Init(values []int) (t *LoserTree, ind leafInd, ok bool) {
+func Init(values []int) (t *LoserTree, ind node, ok bool) {
+	// ok for identity with the Pop
 	if values == nil || len(values) == 0 {
 		return // nil, 0, false
 	}
 	leavesSlice, nodesSlice, ext := initiateSlices(values)
 
-	leaves := sliceLeaf(leavesSlice)
-	nodes := sliceLeafInd(nodesSlice)
+	leaves := sliceLeaves(leavesSlice)
+	nodes := sliceNodes(nodesSlice)
 
-	winnersSlice := make([]leafInd, ext*2)
+	winnersSlice := make([]node, ext*2)
 	copy(winnersSlice[ext:], nodesSlice[ext:])
-	winners := sliceLeafInd(winnersSlice)
+	winners := sliceNodes(winnersSlice)
 
 	for p := ext - 1; p >= 1; p-- {
-		i, j := *winners.ind(p * 2), *winners.ind(p*2 + 1)
-		winner, loser := initBattle(*leaves.ind(i), *leaves.ind(j), i, j)
+		i, j := winners.ind(p*2), winners.ind(p*2+1)
+		winner, loser := initBattle(leaves.ind(i), leaves.ind(j), i, j)
 
-		*winners.ind(p) = winner
-		*nodes.ind(p) = loser
+		*winners.indP(p) = winner
+		*nodes.indP(p) = loser
 	}
 
 	t = &LoserTree{}
-	t.winner = *winners.ind(1)
+	t.winner = winners.ind(1)
 
 	t.leavesSlice = leavesSlice
 	t.nodesSlice = nodesSlice
 	t.leaves = leaves
 	t.nodes = nodes
 
-	// TODO: Do we really need ok?
 	return t, t.winner, true
 }
 
-func initiateSlices(values []int) ([]leaf, []leafInd, int) {
+func initiateSlices(values []int) ([]leaf, []node, int) {
 	// len of lt.leaves with sentinels
 	ext := 1
 	for ext < len(values) {
@@ -57,7 +57,7 @@ func initiateSlices(values []int) ([]leaf, []leafInd, int) {
 	}
 
 	leaves := make([]leaf, ext)
-	nodes := make([]leafInd, ext*2)
+	nodes := make([]node, ext*2)
 
 	// vals of values to lt.leaves vals
 	for i, val := range values {
@@ -72,7 +72,7 @@ func initiateSlices(values []int) ([]leaf, []leafInd, int) {
 
 	// fill start level of tree with indexes
 	for i := 0; i < ext; i++ {
-		nodes[ext+i] = leafInd(i)
+		nodes[ext+i] = node(i)
 	}
 	return leaves, nodes, ext
 }
@@ -83,7 +83,7 @@ func initiateSlices(values []int) ([]leaf, []leafInd, int) {
 //
 // It is safe to call only during Init, before the first Kill or Upd call, because
 // of the layout invariant maintained during Init: a sentinel can't be on the left side of an alive leaf.
-func initBattle(i, j leaf, ii, ji leafInd) (winner, loser leafInd) {
+func initBattle(i, j leaf, ii, ji node) (winner, loser node) {
 	if j.v < i.v {
 		return ji, ii
 	}

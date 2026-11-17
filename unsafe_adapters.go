@@ -4,18 +4,31 @@ package losertree
 
 import "unsafe"
 
-func sliceLeafInd(s []leafInd) *leafInd {
-	return unsafe.SliceData(s)
+type (
+	nodeSlice struct{ p *node }
+	leafSlice struct{ p *leaf }
+)
+
+func sliceNodes(s []node) nodeSlice {
+	return nodeSlice{unsafe.SliceData(s)}
 }
 
-func sliceLeaf(s []leaf) *leaf {
-	return unsafe.SliceData(s)
+func sliceLeaves(s []leaf) leafSlice {
+	return leafSlice{unsafe.SliceData(s)}
 }
 
-func (li *leafInd) ind(i int) *leafInd {
-	return (*leafInd)(unsafe.Add(unsafe.Pointer(li), uintptr(i)*unsafe.Sizeof(*li)))
+func (s nodeSlice) ind(i int) node {
+	return *(*node)(unsafe.Add(unsafe.Pointer(s.p), uintptr(i)*unsafe.Sizeof(*s.p)))
 }
 
-func (l *leaf) ind(i leafInd) *leaf {
-	return (*leaf)(unsafe.Add(unsafe.Pointer(l), uintptr(i)*unsafe.Sizeof(*l)))
+func (s leafSlice) ind(i node) leaf {
+	return *(*leaf)(unsafe.Add(unsafe.Pointer(s.p), uintptr(i)*unsafe.Sizeof(*s.p)))
+}
+
+func (s nodeSlice) indP(i int) *node {
+	return (*node)(unsafe.Add(unsafe.Pointer(s.p), uintptr(i)*unsafe.Sizeof(*s.p)))
+}
+
+func (s leafSlice) indP(i node) *leaf {
+	return (*leaf)(unsafe.Add(unsafe.Pointer(s.p), uintptr(i)*unsafe.Sizeof(*s.p)))
 }

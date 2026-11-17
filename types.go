@@ -15,21 +15,21 @@ type leaf struct {
 	alive bool
 }
 
-// leafInd is an alias for int introduced for readability.
-type leafInd int
+// node is an alias for int introduced for readability.
+type node int
 
 // LoserTree is a tournament tree in which each internal node
 // stores the index of the leaf that lost the comparison.
 // The overall winner is kept in the winner field.
 type LoserTree struct {
 	// nodes stores the indices of leaves.
-	nodes      *leafInd
-	nodesSlice []leafInd
+	nodes      nodeSlice
+	nodesSlice []node
 
 	// leaves are the comparison participants.
-	leaves      *leaf
+	leaves      leafSlice
 	leavesSlice []leaf
 
 	// winner is the current minimum, exposed to the caller.
-	winner leafInd
+	winner node
 }
