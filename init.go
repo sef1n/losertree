@@ -29,18 +29,20 @@ func Init(values []int) (t *LoserTree, ind node, ok bool) {
 	winners := sliceNodes(winnersSlice)
 
 	for p := ext - 1; p >= 1; p-- {
-		i, j := winners.ind(p*2), winners.ind(p*2+1)
-		winner, loser := initBattle(leaves.ind(i), leaves.ind(j), i, j)
+		i, j := *indNode(winners, p*2), *indNode(winners, p*2+1)
+		winner, loser := initBattle(*indLeaf(leaves, i), *indLeaf(leaves, j), i, j)
 
-		*winners.indP(p) = winner
-		*nodes.indP(p) = loser
+		*indNode(winners, p) = winner
+		*indNode(nodes, p) = loser
 	}
 
 	t = &LoserTree{}
-	t.winner = winners.ind(1)
+	t.winner = *indNode(winners, 1)
 
-	t.leaves = leaves
-	t.nodes = nodes
+	t.leavesPtr = leaves
+	t.nodesPtr = nodes
+	t.leavesSlice = leavesSlice
+	t.nodesSlice = nodesSlice
 
 	return t, t.winner, true
 }
@@ -68,7 +70,7 @@ func initiateSlices(values []int) ([]leaf, []node, int) {
 
 	// fill start level of tree with indexes
 	for i := 0; i < ext; i++ {
-		nodes[ext+i] = node(i)
+		nodes[ext+i] = i
 	}
 	return leaves, nodes, ext
 }
