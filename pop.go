@@ -1,5 +1,3 @@
-//go:build !safe
-
 package losertree
 
 import (
@@ -56,7 +54,7 @@ func (t *LoserTree) Pop() (ind node, ok bool) {
 	nodes := t.nodes
 	winner := t.winner
 
-	for i := (int(winner) + len(t.leavesSlice)) >> 1; i > 0; i >>= 1 {
+	for i := (int(winner) + len(t.leaves.s)) >> 1; i > 0; i >>= 1 {
 		opp := nodes.indP(i)
 		oppI := *opp
 		// opp := nodes[i]

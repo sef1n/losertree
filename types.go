@@ -1,5 +1,3 @@
-//go:build !safe
-
 // Package losertree implements a loser tree for efficient k-way merging.
 package losertree
 
@@ -23,12 +21,10 @@ type node int
 // The overall winner is kept in the winner field.
 type LoserTree struct {
 	// nodes stores the indices of leaves.
-	nodes      nodeSlice
-	nodesSlice []node
+	nodes nodeSlice
 
 	// leaves are the comparison participants.
-	leaves      leafSlice
-	leavesSlice []leaf
+	leaves leafSlice
 
 	// winner is the current minimum, exposed to the caller.
 	winner node

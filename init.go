@@ -1,5 +1,3 @@
-//go:build !safe
-
 package losertree
 
 import (
@@ -41,8 +39,6 @@ func Init(values []int) (t *LoserTree, ind node, ok bool) {
 	t = &LoserTree{}
 	t.winner = winners.ind(1)
 
-	t.leavesSlice = leavesSlice
-	t.nodesSlice = nodesSlice
 	t.leaves = leaves
 	t.nodes = nodes
 
