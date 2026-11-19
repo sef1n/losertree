@@ -16,7 +16,7 @@ import (
 // The nodes slice is twice as long as the leaves slice
 func Init(values []int) (t *LoserTree, ind node, ok bool) {
 	// ok for identity with the Pop
-	if values == nil || len(values) == 0 {
+	if len(values) == 0 {
 		return // nil, 0, false
 	}
 	leavesSlice, nodesSlice, ext := initiateSlices(values)
