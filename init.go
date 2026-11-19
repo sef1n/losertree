@@ -21,18 +21,16 @@ func Init(values []int) (t *LoserTree, ind node, ok bool) {
 		return // nil, 0, false
 	}
 
+	t = &LoserTree{}
 	// len of lt.leaves with sentinels
 	ext := nextPowerOfTwo(len(values))
 
-	t = &LoserTree{}
 	t.leavesSlice = initLeaves(values, ext)
 	t.nodesSlice = initNodes(ext)
+	winnersSlice := initWinners(t.nodesSlice, ext)
 
 	leaves := sliceLeaves(t.leavesSlice)
 	nodes := sliceNodes(t.nodesSlice)
-
-	winnersSlice := make([]node, ext*2)
-	copy(winnersSlice[ext:], t.nodesSlice[ext:])
 	winners := sliceNodes(winnersSlice)
 
 	for p := ext - 1; p >= 1; p-- {
@@ -48,6 +46,13 @@ func Init(values []int) (t *LoserTree, ind node, ok bool) {
 	t.nodesPtr = nodes
 
 	return t, t.winner, true
+}
+
+func nextPowerOfTwo(n int) int {
+	if n <= 1 {
+		return 1
+	}
+	return 1 << bits.Len(uint(n-1))
 }
 
 func initLeaves(values []int, ext int) []leaf {
@@ -67,13 +72,6 @@ func initLeaves(values []int, ext int) []leaf {
 	return leaves
 }
 
-func nextPowerOfTwo(n int) int {
-	if n <= 1 {
-		return 1
-	}
-	return 1 << bits.Len(uint(n-1))
-}
-
 func initNodes(ext int) []node {
 	nodes := make([]node, ext*2)
 	// fill start level of tree with indexes
@@ -81,6 +79,12 @@ func initNodes(ext int) []node {
 		nodes[ext+i] = i
 	}
 	return nodes
+}
+
+func initWinners(nodes []node, ext int) []node {
+	w := make([]node, ext*2)
+	copy(w[ext:], nodes[ext:])
+	return w
 }
 
 func initiateSlices(values []int) ([]leaf, []node, int) {
