@@ -2,6 +2,7 @@ package losertree
 
 import (
 	"math"
+	"math/bits"
 )
 
 // Init creates a LoserTree from the given values.
@@ -21,10 +22,7 @@ func Init(values []int) (t *LoserTree, ind node, ok bool) {
 	}
 
 	// len of lt.leaves with sentinels
-	ext := 1
-	for ext < len(values) {
-		ext <<= 1
-	}
+	ext := nextPowerOfTwo(len(values))
 
 	t = &LoserTree{}
 	t.leavesSlice = initLeaves(values, ext)
@@ -67,6 +65,13 @@ func initLeaves(values []int, ext int) []leaf {
 	}
 
 	return leaves
+}
+
+func nextPowerOfTwo(n int) int {
+	if n <= 1 {
+		return 1
+	}
+	return 1 << bits.Len(uint(n-1))
 }
 
 func initNodes(ext int) []node {
