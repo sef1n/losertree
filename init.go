@@ -19,13 +19,22 @@ func Init(values []int) (t *LoserTree, ind node, ok bool) {
 	if len(values) == 0 {
 		return // nil, 0, false
 	}
-	leavesSlice, nodesSlice, ext := initiateSlices(values)
 
-	leaves := sliceLeaves(leavesSlice)
-	nodes := sliceNodes(nodesSlice)
+	// len of lt.leaves with sentinels
+	ext := 1
+	for ext < len(values) {
+		ext <<= 1
+	}
+
+	t = &LoserTree{}
+	t.leavesSlice = initLeaves(values, ext)
+	t.nodesSlice = initNodes(ext)
+
+	leaves := sliceLeaves(t.leavesSlice)
+	nodes := sliceNodes(t.nodesSlice)
 
 	winnersSlice := make([]node, ext*2)
-	copy(winnersSlice[ext:], nodesSlice[ext:])
+	copy(winnersSlice[ext:], t.nodesSlice[ext:])
 	winners := sliceNodes(winnersSlice)
 
 	for p := ext - 1; p >= 1; p-- {
@@ -36,15 +45,37 @@ func Init(values []int) (t *LoserTree, ind node, ok bool) {
 		*indNode(nodes, p) = loser
 	}
 
-	t = &LoserTree{}
 	t.winner = *indNode(winners, 1)
-
 	t.leavesPtr = leaves
 	t.nodesPtr = nodes
-	t.leavesSlice = leavesSlice
-	t.nodesSlice = nodesSlice
 
 	return t, t.winner, true
+}
+
+func initLeaves(values []int, ext int) []leaf {
+	leaves := make([]leaf, ext)
+
+	// vals of values to lt.leaves vals
+	for i, val := range values {
+		leaves[i].v = val
+		leaves[i].alive = true
+	}
+
+	// create sentinels
+	for i := len(values); i < ext; i++ {
+		leaves[i].v = math.MaxInt
+	}
+
+	return leaves
+}
+
+func initNodes(ext int) []node {
+	nodes := make([]node, ext*2)
+	// fill start level of tree with indexes
+	for i := 0; i < ext; i++ {
+		nodes[ext+i] = i
+	}
+	return nodes
 }
 
 func initiateSlices(values []int) ([]leaf, []node, int) {
