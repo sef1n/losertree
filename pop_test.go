@@ -95,6 +95,8 @@ func TestPop(t *testing.T) {
 					tree.Kill()
 				}
 				ind, ok = tree.Pop()
+
+				checkInvariants(t, tree)
 			}
 
 			// Calling Pop on an exhausted tree must be a no-op (0, false),
@@ -134,6 +136,8 @@ func TestKill(t *testing.T) {
 	if ind != 1 {
 		t.Errorf("winner ind = %d, want 1", ind)
 	}
+
+	checkInvariants(t, tree)
 }
 
 // TestUpd verifies that Upd replaces the winner's value without touching
@@ -154,4 +158,6 @@ func TestUpd(t *testing.T) {
 	if !ok || ind != 1 {
 		t.Errorf("Pop = (%d, %v), want (1, true)", ind, ok)
 	}
+
+	checkInvariants(t, tree)
 }

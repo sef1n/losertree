@@ -170,6 +170,8 @@ func TestInit(t *testing.T) {
 				t.Fatal("Init() = nil, want non-nil")
 			}
 
+			checkInvariants(t, got)
+
 			if !reflect.DeepEqual(got.leavesSlice, test.want.leavesSlice) {
 				t.Errorf("leaves mismatch\n got: %+v\nwant: %+v",
 					got.leavesSlice, test.want.leavesSlice)
