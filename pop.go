@@ -4,28 +4,20 @@ import (
 	"math"
 )
 
-// WARN: obsolete docs
-
 // Upd sets the value of the current winning leaf to next.
 // It does not modify alive.
-// It does not update the tree; call Pop afterwards to recompute the winner.
+// It does not update the entire tree; call Pop afterwards to recompute the winner.
 //
+// Do not call Upd on an exhausted tree (when Pop returned ok == false).
 // Upd panics if t is nil.
-//
-// WARN: calling Upd on a killed leaf leaves alive set to false,
-// but the new value may win comparisons where the leaf appears as the opponent.
-// This can make Pop return inconsistent results (including ok=false while alive leaves remain).
-// Do not call Upd on a leaf after Kill.
 func (t *LoserTree) Upd(next int) {
 	indLeaf(t.leavesPtr, t.winner).v = next
 }
 
-// TODO: revive func?
-
 // Kill replaces the current winning leaf with a sentinel value.
 // A killed leaf always loses to any alive leaf.
 // After killing, the leaf's value is set to [math.MaxInt] and the leaf is marked as dead.
-// Killed leaf can't be revived.
+// A killed leaf cannot be revived.
 //
 // Kill panics if t is nil.
 func (t *LoserTree) Kill() {
@@ -45,11 +37,6 @@ func (t *LoserTree) Kill() {
 //
 // Pop panics if t is nil.
 func (t *LoserTree) Pop() (ind node, ok bool) {
-	// NOTE: without checking the gain on small k
-	// if !t.winner.valid {
-	// 	return 0, false
-	// }
-
 	leaves := t.leavesPtr
 	nodes := t.nodesPtr
 	winner := t.winner
@@ -57,7 +44,7 @@ func (t *LoserTree) Pop() (ind node, ok bool) {
 	for i := (winner + len(t.leavesSlice)) >> 1; i > 0; i >>= 1 {
 		opp := indNode(nodes, i)
 		oppI := *opp
-		// opp := nodes[i]
+
 		winner, *opp = popBattle(
 			*indLeaf(leaves, winner), *indLeaf(leaves, oppI),
 			winner, oppI)
@@ -67,14 +54,13 @@ func (t *LoserTree) Pop() (ind node, ok bool) {
 	return winner, indLeaf(leaves, winner).alive
 }
 
-// initBattle compares v of both leaves and checks alive of the first operand only.
+// popBattle compares v of both leaves and checks alive of the first operand only.
 // It returns the winner and loser indices.
 //
-// Used by Pop; checks alive of the first operand so killed leaves do not win alive leaves.
+// Used by Pop; checks alive of the first operand so killed leaves do not win against alive leaves.
 //
 // WARN: A sentinel j with v < i.v can win even though j.alive is false;
-// this is safe only while the invariant dead >> v == math.MaxInt holds.
-// (check Upd doc)
+// this is safe only while the invariant dead => v == math.MaxInt holds.
 //
 // If both operands are sentinels, the winner is arbitrary.
 func popBattle(i, j leaf, ii, ji node) (winner, loser node) {
