@@ -2,17 +2,6 @@ package losertree
 
 import "unsafe"
 
-type (
-	nodeSlice struct {
-		s []node
-		p *node
-	}
-	leafSlice struct {
-		s []leaf
-		p *leaf
-	}
-)
-
 func sliceNodes(s []node) *node {
 	return unsafe.SliceData(s)
 }
