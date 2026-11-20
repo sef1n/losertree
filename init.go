@@ -87,34 +87,6 @@ func initWinners(nodes []node, ext int) []node {
 	return w
 }
 
-func initiateSlices(values []int) ([]leaf, []node, int) {
-	// len of lt.leaves with sentinels
-	ext := 1
-	for ext < len(values) {
-		ext <<= 1
-	}
-
-	leaves := make([]leaf, ext)
-	nodes := make([]node, ext*2)
-
-	// vals of values to lt.leaves vals
-	for i, val := range values {
-		leaves[i].v = val
-		leaves[i].alive = true
-	}
-
-	// create sentinels
-	for i := len(values); i < ext; i++ {
-		leaves[i].v = math.MaxInt
-	}
-
-	// fill start level of tree with indexes
-	for i := 0; i < ext; i++ {
-		nodes[ext+i] = i
-	}
-	return leaves, nodes, ext
-}
-
 // initBattle compares only the v fields of leaf structs and returns the winner and loser indices.
 //
 // Used during Init; faster because it skips the alive check.
