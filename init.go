@@ -31,7 +31,7 @@ func Init(values []int) (t *LoserTree, ind node, ok bool) {
 	winnersSlice := initWinners(t.nodesSlice, ext)
 
 	// unsafe initWinners
-	// to avoid borders checking
+	// to avoid bounds checking
 	leaves := sliceLeaves(t.leavesSlice)
 	nodes := sliceNodes(t.nodesSlice)
 	winners := sliceNodes(winnersSlice)
