@@ -14,7 +14,7 @@ import (
 //
 // Init copies the input values and pads the leaves slice with dead entries to
 // the smallest power of two not less than len(values).
-// The nodes slice is twice as long as the leaves slice
+// The nodes slice is twice as long as the leaves slice.
 func Init(values []int) (t *LoserTree, ind node, ok bool) {
 	// ok for identity with the Pop
 	if len(values) == 0 {
@@ -22,6 +22,7 @@ func Init(values []int) (t *LoserTree, ind node, ok bool) {
 	}
 
 	t = &LoserTree{}
+
 	// len of lt.leaves with sentinels
 	ext := nextPowerOfTwo(len(values))
 
@@ -29,9 +30,14 @@ func Init(values []int) (t *LoserTree, ind node, ok bool) {
 	t.nodesSlice = initNodes(ext)
 	winnersSlice := initWinners(t.nodesSlice, ext)
 
+	// unsafe initWinners
+	// to avoid borders checking
 	leaves := sliceLeaves(t.leavesSlice)
 	nodes := sliceNodes(t.nodesSlice)
 	winners := sliceNodes(winnersSlice)
+
+	t.leavesPtr = leaves
+	t.nodesPtr = nodes
 
 	for p := ext - 1; p >= 1; p-- {
 		i, j := *indNode(winners, p*2), *indNode(winners, p*2+1)
@@ -42,9 +48,6 @@ func Init(values []int) (t *LoserTree, ind node, ok bool) {
 	}
 
 	t.winner = *indNode(winners, 1)
-	t.leavesPtr = leaves
-	t.nodesPtr = nodes
-
 	return t, t.winner, true
 }
 
@@ -55,16 +58,18 @@ func nextPowerOfTwo(n int) int {
 	return 1 << bits.Len(uint(n-1))
 }
 
+// initLeaves initializes the leaves slice of tree
+// with the given values.
 func initLeaves(values []int, ext int) []leaf {
 	leaves := make([]leaf, ext)
 
-	// vals of values to lt.leaves vals
+	// values to []leaf
 	for i, val := range values {
 		leaves[i].v = val
 		leaves[i].alive = true
 	}
 
-	// create sentinels
+	// fill with sentinels
 	for i := len(values); i < ext; i++ {
 		leaves[i].v = math.MaxInt
 	}
@@ -72,6 +77,8 @@ func initLeaves(values []int, ext int) []leaf {
 	return leaves
 }
 
+// initNodes initializes the nodes slice of tree
+// with indices of participants.
 func initNodes(ext int) []node {
 	nodes := make([]node, ext*2)
 	// fill start level of tree with indexes
@@ -81,13 +88,14 @@ func initNodes(ext int) []node {
 	return nodes
 }
 
+// initWinners creates a temporary nodes slice by copying the nodes[ext:].
 func initWinners(nodes []node, ext int) []node {
 	w := make([]node, ext*2)
 	copy(w[ext:], nodes[ext:])
 	return w
 }
 
-// initBattle compares only the v fields of leaf structs and returns the winner and loser indices.
+// initBattle compares only the v field of each leaf and returns the winner and loser indices.
 //
 // Used during Init; faster because it skips the alive check.
 //
