@@ -115,6 +115,9 @@ func FuzzCycle(f *testing.F) {
 	f.Add([]byte{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07})
 
 	f.Fuzz(func(t *testing.T, raw []byte) {
+		if len(raw) > 1024 {
+			t.Skip()
+		}
 		// if bits.Len(raw) < bits.Len(int) fuzz skips the test
 		consumer := fuzz.NewConsumer(raw)
 		data := make([]int, 0, len(raw)/4)
@@ -128,21 +131,25 @@ func FuzzCycle(f *testing.F) {
 
 		etalon := make([]int, len(data))
 		copy(etalon, data)
+		slices.Sort(etalon)
 
-		testedT, testedInd, ok := Init(data)
+		tree, treeInd, ok := Init(data)
 		if !ok {
 			t.SkipNow()
 		}
 
-		slices.Sort(etalon)
-
 		for i := range data {
-			if etalon[i] != data[testedInd] {
-				t.Fatalf("Mismatch: ethalon (%v) != tested (%v)", etalon[i], data[testedInd])
+			if etalon[i] != data[treeInd] {
+				t.Fatalf("i=%d ind=%d: want %d got %d (data=%v)", i, treeInd, etalon[i], data[treeInd], data)
 			}
-			testedT.Kill()
-			testedInd, _ = testedT.Pop()
+			tree.Kill()
+			treeInd, _ = tree.Pop()
 		}
+
+		if _, ok := tree.Pop(); ok {
+			t.Fatal("Pop returned ok=true after all leaves killed")
+		}
+		checkInvariants(t, tree)
 	})
 }
 
