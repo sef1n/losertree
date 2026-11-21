@@ -112,48 +112,75 @@ func TestPop(t *testing.T) {
 }
 
 func FuzzCycle(f *testing.F) {
+	const maxStreams = 16
+	const maxStreamVals = 50
+
 	f.Add([]byte{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07})
 
 	f.Fuzz(func(t *testing.T, raw []byte) {
-		if len(raw) > 1024 {
-			t.Skip()
+		c := fuzz.NewConsumer(raw)
+		k, _ := c.GetInt()
+		k = 1 + int(uint(k))%maxStreams
+
+		streams := make([][]int, k)
+		all := make([]int, 0, k)
+
+		// should use arena for streams' values
+		for si := range streams {
+			l, _ := c.GetInt()
+			s := make([]int, 1+int(uint(l))%maxStreamVals)
+			for isi := range s {
+				v, _ := c.GetInt()
+				s[isi] = v
+			}
+			slices.Sort(s)
+			streams[si] = s
+			all = append(all, s...)
 		}
-		// if bits.Len(raw) < bits.Len(int) fuzz skips the test
-		consumer := fuzz.NewConsumer(raw)
-		data := make([]int, 0, len(raw)/4)
 
-		var err error
-		var i int
-		for err == nil {
-			i, err = consumer.GetInt()
-			data = append(data, i)
+		initial := make([]int, k)
+		for i := range k {
+			initial[i] = streams[i][0]
 		}
 
-		etalon := make([]int, len(data))
-		copy(etalon, data)
-		slices.Sort(etalon)
+		slices.Sort(all)
 
-		tree, treeInd, ok := Init(data)
+		tree, treeInd, ok := Init(initial)
 		if !ok {
 			t.SkipNow()
 		}
-
 		defer func() {
 			checkInvariants(t, tree)
 		}()
 
-		for i := range data {
-			if etalon[i] != data[treeInd] {
-				t.Fatalf("i=%d ind=%d: want %d got %d (data=%v)", i, treeInd, etalon[i], data[treeInd], data)
+		for i := range all {
+			if all[i] != streams[treeInd][0] {
+				t.Fatalf("i=%d ind=%d: want %d got %d (data=%v)", i, treeInd, all[i], streams[treeInd][0], all)
 			}
-			tree.Kill()
-			treeInd, _ = tree.Pop()
+			if len(streams[treeInd]) > 1 {
+				streams[treeInd] = streams[treeInd][1:]
+				tree.Upd(streams[treeInd][0])
+			} else {
+				streams[treeInd] = nil
+				tree.Kill()
+			}
+			treeInd, ok = tree.Pop()
+			if i < len(all)-1 && !ok {
+				t.Fatalf("Pop returned ok=false early at i=%d", i)
+			}
 		}
 
 		if _, ok := tree.Pop(); ok {
 			t.Fatal("Pop returned ok=true after all leaves killed")
 		}
 	})
+}
+
+func abs(i int) int {
+	if i < 0 {
+		i *= -1
+	}
+	return i
 }
 
 // TestKill is a regression test for a bug where Kill used a leaf copy
