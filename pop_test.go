@@ -138,6 +138,10 @@ func FuzzCycle(f *testing.F) {
 			t.SkipNow()
 		}
 
+		defer func() {
+			checkInvariants(t, tree)
+		}()
+
 		for i := range data {
 			if etalon[i] != data[treeInd] {
 				t.Fatalf("i=%d ind=%d: want %d got %d (data=%v)", i, treeInd, etalon[i], data[treeInd], data)
@@ -149,7 +153,6 @@ func FuzzCycle(f *testing.F) {
 		if _, ok := tree.Pop(); ok {
 			t.Fatal("Pop returned ok=true after all leaves killed")
 		}
-		checkInvariants(t, tree)
 	})
 }
 
