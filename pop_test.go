@@ -2,7 +2,10 @@ package losertree
 
 import (
 	"math"
+	"slices"
 	"testing"
+
+	fuzz "github.com/AdaLogics/go-fuzz-headers"
 )
 
 type popStep struct {
@@ -106,6 +109,41 @@ func TestPop(t *testing.T) {
 			}
 		})
 	}
+}
+
+func FuzzCycle(f *testing.F) {
+	f.Add([]byte{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07})
+
+	f.Fuzz(func(t *testing.T, raw []byte) {
+		// if bits.Len(raw) < bits.Len(int) fuzz skips the test
+		consumer := fuzz.NewConsumer(raw)
+		data := make([]int, 0, len(raw)/4)
+
+		var err error
+		var i int
+		for err == nil {
+			i, err = consumer.GetInt()
+			data = append(data, i)
+		}
+
+		etalon := make([]int, len(data))
+		copy(etalon, data)
+
+		testedT, testedInd, ok := Init(data)
+		if !ok {
+			t.SkipNow()
+		}
+
+		slices.Sort(etalon)
+
+		for i := range data {
+			if etalon[i] != data[testedInd] {
+				t.Fatalf("Mismatch: ethalon (%v) != tested (%v)", etalon[i], data[testedInd])
+			}
+			testedT.Kill()
+			testedInd, _ = testedT.Pop()
+		}
+	})
 }
 
 // TestKill is a regression test for a bug where Kill used a leaf copy
