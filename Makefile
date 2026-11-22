@@ -1,10 +1,14 @@
 .PHONY: check check-ci fmt fmt-check vet tidy test test-race test-ptr test-cover test-bench test-fuzz-cycle
 
+SHELL := /bin/bash
+.SHELLFLAGS := -euo pipefail -c
+
 # Bench params
-BTime ?= 1
+BTime ?= 1x
 BCount ?= 1
-BOut ?=
+BOut ?= /dev/null
 BName ?=
+BPkgs ?= ./benchmarks/losertree/ ./benchmarks/goloser/
 
 # Fuzz params
 FTime ?= 1m
@@ -45,10 +49,10 @@ test-cover:
 
 test-bench:
 	@if [ -z "$(BName)" ]; then \
-		echo "Usage: make test-bench BName=BenchmarkSmth"; \
+		echo "Usage: make test-bench BName=BenchmarkSmth BPkgs=./benchmarks/losertree/"; \
 		exit 1; \
 	fi
-	go test -bench=$(BName) -benchmem -benchtime=$(BTime)x -count=$(BCount) ./... | tee "$(BOut)"
+	BENCHNAME="$(BName)" BENCHTIME=$(BTime) COUNT=$(BCount) ./benchmarks/gobench.sh $(BPkgs) | tee "$(BOut)"
 
 test-fuzz-cycle:
 	go test -fuzz=FuzzCycle -fuzztime=$(FTime) .
