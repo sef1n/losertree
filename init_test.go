@@ -13,8 +13,8 @@ func TestInit(t *testing.T) {
 
 	type wantTree struct {
 		leavesSlice []leaf
-		nodesSlice  []node
-		winner      node
+		nodesSlice  []Index
+		winner      Index
 	}
 
 	tests := []struct {
@@ -30,7 +30,7 @@ func TestInit(t *testing.T) {
 			in:   []int{42},
 			want: &wantTree{
 				leavesSlice: []leaf{rn(42)},
-				nodesSlice:  []node{0, 0},
+				nodesSlice:  []Index{0, 0},
 				winner:      0,
 			},
 		},
@@ -39,7 +39,7 @@ func TestInit(t *testing.T) {
 			in:   []int{1, 2},
 			want: &wantTree{
 				leavesSlice: []leaf{rn(1), rn(2)},
-				nodesSlice: []node{
+				nodesSlice: []Index{
 					0, 1,
 					0, 1,
 				},
@@ -51,7 +51,7 @@ func TestInit(t *testing.T) {
 			in:   []int{2, 1},
 			want: &wantTree{
 				leavesSlice: []leaf{rn(2), rn(1)},
-				nodesSlice: []node{
+				nodesSlice: []Index{
 					0, 0,
 					0, 1,
 				},
@@ -63,7 +63,7 @@ func TestInit(t *testing.T) {
 			in:   []int{3, 2, 1},
 			want: &wantTree{
 				leavesSlice: []leaf{rn(3), rn(2), rn(1), inf()},
-				nodesSlice: []node{
+				nodesSlice: []Index{
 					0, 1,
 					0, 3,
 					0, 1, 2, 3,
@@ -76,7 +76,7 @@ func TestInit(t *testing.T) {
 			in:   []int{1, 1, 1},
 			want: &wantTree{
 				leavesSlice: []leaf{rn(1), rn(1), rn(1), inf()},
-				nodesSlice: []node{
+				nodesSlice: []Index{
 					0, 2,
 					1, 3,
 					0, 1, 2, 3,
@@ -89,7 +89,7 @@ func TestInit(t *testing.T) {
 			in:   []int{4, 3, 2, 1},
 			want: &wantTree{
 				leavesSlice: []leaf{rn(4), rn(3), rn(2), rn(1)},
-				nodesSlice: []node{
+				nodesSlice: []Index{
 					0, 1,
 					0, 2,
 					0, 1, 2, 3,
@@ -102,7 +102,7 @@ func TestInit(t *testing.T) {
 			in:   []int{5, 5, 5, 5},
 			want: &wantTree{
 				leavesSlice: []leaf{rn(5), rn(5), rn(5), rn(5)},
-				nodesSlice:  []node{0, 2, 1, 3, 0, 1, 2, 3},
+				nodesSlice:  []Index{0, 2, 1, 3, 0, 1, 2, 3},
 				winner:      0,
 			},
 		},
@@ -113,7 +113,7 @@ func TestInit(t *testing.T) {
 				leavesSlice: []leaf{
 					rn(1), rn(2), rn(3), rn(4), rn(5), inf(), inf(), inf(),
 				},
-				nodesSlice: []node{
+				nodesSlice: []Index{
 					0, 4,
 					2, 6,
 					1, 3, 5, 7,
@@ -132,7 +132,7 @@ func TestInit(t *testing.T) {
 				leavesSlice: []leaf{
 					rn(5), rn(3), rn(2), rn(1), rn(4), inf(), inf(), inf(),
 				},
-				nodesSlice: []node{
+				nodesSlice: []Index{
 					0, 4,
 					1, 6,
 					0, 2, 5, 7,
@@ -146,7 +146,7 @@ func TestInit(t *testing.T) {
 			in:   []int{math.MaxInt},
 			want: &wantTree{
 				leavesSlice: []leaf{rn(math.MaxInt)},
-				nodesSlice:  []node{0, 0},
+				nodesSlice:  []Index{0, 0},
 				winner:      0,
 			},
 		},

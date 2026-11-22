@@ -15,7 +15,7 @@ import (
 // Init copies the input values and pads the leaves slice with dead entries to
 // the smallest power of two not less than len(values).
 // The nodes slice is twice as long as the leaves slice.
-func Init(values []int) (t *LoserTree, ind node, ok bool) {
+func Init(values []int) (t *LoserTree, ind Index, ok bool) {
 	// ok for identity with the Pop
 	if len(values) == 0 {
 		return // nil, 0, false
@@ -79,8 +79,8 @@ func initLeaves(values []int, ext int) []leaf {
 
 // initNodes initializes the nodes slice of tree
 // with indices of participants.
-func initNodes(ext int) []node {
-	nodes := make([]node, ext*2)
+func initNodes(ext int) []Index {
+	nodes := make([]Index, ext*2)
 	// fill start level of tree with indexes
 	for i := 0; i < ext; i++ {
 		nodes[ext+i] = i
@@ -89,8 +89,8 @@ func initNodes(ext int) []node {
 }
 
 // initWinners creates a temporary nodes slice by copying the nodes[ext:].
-func initWinners(nodes []node, ext int) []node {
-	w := make([]node, ext*2)
+func initWinners(nodes []Index, ext int) []Index {
+	w := make([]Index, ext*2)
 	copy(w[ext:], nodes[ext:])
 	return w
 }
@@ -101,7 +101,7 @@ func initWinners(nodes []node, ext int) []node {
 //
 // It is safe to call only during Init, before the first Kill or Upd call, because
 // of the layout invariant maintained during Init: a sentinel can't be on the left side of an alive leaf.
-func initBattle(i, j leaf, ii, ji node) (winner, loser node) {
+func initBattle(i, j leaf, ii, ji Index) (winner, loser Index) {
 	if j.v < i.v {
 		return ji, ii
 	}

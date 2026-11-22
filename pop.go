@@ -36,7 +36,7 @@ func (t *LoserTree) Kill() {
 // Calling Pop twice without Upd/Kill recomputes the same path and returns the same ind.
 //
 // Pop panics if t is nil.
-func (t *LoserTree) Pop() (ind node, ok bool) {
+func (t *LoserTree) Pop() (ind Index, ok bool) {
 	leaves := t.leavesPtr
 	nodes := t.nodesPtr
 	winner := t.winner
@@ -63,7 +63,7 @@ func (t *LoserTree) Pop() (ind node, ok bool) {
 // this is safe only while the invariant dead => v == math.MaxInt holds.
 //
 // If both operands are sentinels, the winner is arbitrary.
-func popBattle(i, j leaf, ii, ji node) (winner, loser node) {
+func popBattle(i, j leaf, ii, ji Index) (winner, loser Index) {
 	if j.v < i.v || !i.alive {
 		return ji, ii
 	}
