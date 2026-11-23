@@ -1,5 +1,3 @@
-// Package losertree implements a loser tree algorithm for efficient k-way merging.
-// It uses unsafe to avoid borders checking during slice indexing.
 package losertree
 
 // leaf is a participant of a [LoserTree].
