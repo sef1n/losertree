@@ -40,6 +40,11 @@ Liveness is an `alive` flag on each leaf, not a sentinel value.
 - **Deterministic tie-break.**
 On equal keys the left leaf wins, so the merge preserves source order.
 
+- **No bounds-checked build.**
+Only the `unsafe` implementation is shipped. The `safe` build behind
+`//go:build safe` was removed during development; see [`doc.go`](doc.go)
+for the rationale, or use `go-loser` if you need pure Go.
+
 - **Not goroutine-safe.**
 One tree per goroutine; no locks, no atomics.
 
