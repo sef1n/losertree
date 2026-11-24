@@ -71,10 +71,14 @@ func initLeaves(values []int, ext int) []leaf {
 
 	// fill with sentinels
 	for i := len(values); i < ext; i++ {
-		leaves[i].v = math.MaxInt
+		leaves[i].v = deadVal()
 	}
 
 	return leaves
+}
+
+func deadVal() int {
+	return math.MaxInt
 }
 
 // initNodes initializes the nodes slice of tree
