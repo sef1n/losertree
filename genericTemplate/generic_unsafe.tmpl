@@ -1,0 +1,27 @@
+package losertree
+
+import "unsafe"
+
+// sliceNodes returns a pointer to the first element of s.
+// Similar to unsafe.SliceData(s).
+func sliceNodesGTYPE(s []IndexGTYPE) *IndexGTYPE {
+	return unsafe.SliceData(s)
+}
+
+// sliceLeaves returns a pointer to the first element of s.
+// Similar to unsafe.SliceData(s).
+func sliceLeavesGTYPE(s []leafGTYPE) *leafGTYPE {
+	return unsafe.SliceData(s)
+}
+
+// indNode returns a pointer to the ith node, starting from s.
+// It is equivalent to &s[i], but skips bounds checking.
+func indNodeGTYPE(s *IndexGTYPE, i int) *IndexGTYPE {
+	return (*IndexGTYPE)(unsafe.Add(unsafe.Pointer(s), uintptr(i)*unsafe.Sizeof(*s)))
+}
+
+// indLeaf returns a pointer to the ith leaf, starting from s.
+// It is equivalent to &s[i], but skips bounds checking.
+func indLeafGTYPE(s *leafGTYPE, i int) *leafGTYPE {
+	return (*leafGTYPE)(unsafe.Add(unsafe.Pointer(s), uintptr(i)*unsafe.Sizeof(*s)))
+}

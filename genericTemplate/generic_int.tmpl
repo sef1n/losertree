@@ -1,0 +1,37 @@
+package generic
+
+import "math"
+
+func deadValGTYPE() GTYPE {
+	return math.MaxInt
+}
+
+// initBattleGTYPE compares only the v field of each leaf and returns the winner and loser indices.
+//
+// Used during Init; faster because it skips the alive check.
+//
+// It is safe to call only during Init, before the first Kill or Upd call, because
+// of the layout invariant maintained during Init: a sentinel can't be on the left side of an alive leaf.
+func initBattleGTYPE(i, j leafGTYPE, ii, ji IndexGTYPE) (winner, loser IndexGTYPE) {
+	if j.v < i.v {
+		return ji, ii
+	}
+	return ii, ji
+}
+
+// popBattleGTYPE compares v of both leaves and checks alive of the first operand only.
+// It returns the winner and loser indices.
+//
+// Used by Pop; checks alive of the first operand so killed leaves do not win against alive leaves.
+//
+// WARN: A sentinel j with v < i.v can win even though j.alive is false;
+// this is safe only while the invariant dead => v == math.MaxInt holds.
+//
+// If both operands are sentinels, the winner is arbitrary.
+func popBattleGTYPE(i, j leafGTYPE, ii, ji IndexGTYPE) (winner, loser IndexGTYPE) {
+	if j.v < i.v || !i.alive {
+		return ji, ii
+	}
+
+	return ii, ji
+}

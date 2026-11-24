@@ -72,7 +72,7 @@ func merge(streams [][]int) []int {
   streams[i] = streams[i][1:]
  }
 
- tree, ind, ok := losertree.Init(initial)
+ tree, ind, ok := losertree.InitInt(initial)
  if tree == nil {
   return nil
  }

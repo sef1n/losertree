@@ -1,0 +1,221 @@
+package generic
+
+import (
+	"fmt"
+	"math/bits"
+	"strings"
+)
+
+// leafGTYPE is a participant of a [LoserTreeGTYPE].
+//
+// After reading the winner, the caller must update the
+// winning leafGTYPE via Upd or Kill, then call Pop to re-establish the winner.
+// This package imposes no constraints on participant values.
+//
+// A leafGTYPE keeps current int value and an alive flag.
+type leafGTYPE struct {
+	v     GTYPE
+	alive bool
+}
+
+// IndexGTYPE is an alias for int introduced for readability.
+type IndexGTYPE = int
+
+// [LoserTreeGTYPE] is a tournament tree in which each internal node
+// stores the index of the leaf that lost the comparison.
+// The overall winner is kept in the winner field.
+type LoserTreeGTYPE struct {
+	// nodesPtr stores the indices of leaves.
+	nodesPtr *IndexGTYPE
+	// leavesPtr are the comparison participants.
+	leavesPtr *leafGTYPE
+
+	// headers of slices to prevent garbage collection.
+	nodesSlice  []IndexGTYPE
+	leavesSlice []leafGTYPE
+
+	// winner is the current minimum, exposed to the caller.
+	winner IndexGTYPE
+}
+
+// InitGTYPE creates a LoserTree from the given values.
+// [math.MaxInt] is treated as an ordinary (live) value.
+//
+// If values is nil or empty, it returns (nil, 0, false).
+// Otherwise it returns the [*LoserTreeGTYPE], the index of the winning leaf, and ok.
+// Both the [*LoserTreeGTYPE] and the index are meaningful only when ok is true.
+//
+// InitGTYPE copies the input values and pads the leaves slice with dead entries to
+// the smallest power of two not less than len(values).
+// The nodes slice is twice as long as the leaves slice.
+func InitGTYPE(values []GTYPE) (t *LoserTreeGTYPE, ind IndexGTYPE, ok bool) {
+	// ok for identity with the Pop
+	if len(values) == 0 {
+		return // nil, 0, false
+	}
+
+	t = &LoserTreeGTYPE{}
+
+	// len of lt.leaves with sentinels
+	ext := nextPowerOfTwoGTYPE(len(values))
+
+	t.leavesSlice = initLeavesGTYPE(values, ext)
+	t.nodesSlice = initNodesGTYPE(ext)
+	winnersSlice := initWinnersGTYPE(t.nodesSlice, ext)
+
+	// unsafe initWinners
+	// to avoid bounds checking
+	leaves := sliceLeavesGTYPE(t.leavesSlice)
+	nodes := sliceNodesGTYPE(t.nodesSlice)
+	winners := sliceNodesGTYPE(winnersSlice)
+
+	t.leavesPtr = leaves
+	t.nodesPtr = nodes
+
+	for p := ext - 1; p >= 1; p-- {
+		i, j := *indNodeGTYPE(winners, p*2), *indNodeGTYPE(winners, p*2+1)
+		winner, loser := initBattleGTYPE(*indLeafGTYPE(leaves, i), *indLeafGTYPE(leaves, j), i, j)
+
+		*indNodeGTYPE(winners, p) = winner
+		*indNodeGTYPE(nodes, p) = loser
+	}
+
+	t.winner = *indNodeGTYPE(winners, 1)
+	return t, t.winner, true
+}
+
+func nextPowerOfTwoGTYPE(n int) int {
+	if n <= 1 {
+		return 1
+	}
+	return 1 << bits.Len(uint(n-1))
+}
+
+// initLeavesGTYPE initializes the leaves slice of tree
+// with the given values.
+func initLeavesGTYPE(values []GTYPE, ext int) []leafGTYPE {
+	leaves := make([]leafGTYPE, ext)
+
+	// values to []leaf
+	for i, val := range values {
+		leaves[i].v = val
+		leaves[i].alive = true
+	}
+
+	// fill with sentinels
+	for i := len(values); i < ext; i++ {
+		leaves[i].v = deadValGTYPE()
+	}
+
+	return leaves
+}
+
+// initNodesGTYPE initializes the nodes slice of tree
+// with indices of participants.
+func initNodesGTYPE(ext int) []IndexGTYPE {
+	nodes := make([]IndexGTYPE, ext*2)
+	// fill start level of tree with indexes
+	for i := 0; i < ext; i++ {
+		nodes[ext+i] = i
+	}
+	return nodes
+}
+
+// initWinnersGTYPE creates a temporary nodes slice by copying the nodes[ext:].
+func initWinnersGTYPE(nodes []IndexGTYPE, ext int) []IndexGTYPE {
+	w := make([]IndexGTYPE, ext*2)
+	copy(w[ext:], nodes[ext:])
+	return w
+}
+
+// Upd sets the value of the current winning leaf to next.
+// It does not modify alive.
+// It does not update the entire tree; call Pop afterwards to recompute the winner.
+//
+// Do not call Upd on an exhausted tree (when Pop returned ok == false).
+// Upd panics if t is nil.
+func (t *LoserTreeGTYPE) Upd(next GTYPE) {
+	indLeafGTYPE(t.leavesPtr, t.winner).v = next
+}
+
+// Kill replaces the current winning leaf with a sentinel value.
+// A killed leaf always loses to any alive leaf.
+// After killing, the leaf's value is set to [math.MaxInt] and the leaf is marked as dead.
+// A killed leaf cannot be revived.
+//
+// Kill panics if t is nil.
+func (t *LoserTreeGTYPE) Kill() {
+	*indLeafGTYPE(t.leavesPtr, t.winner) = leafGTYPE{v: deadValGTYPE()}
+}
+
+// Pop updates the tree's winner and the path from the winning leaf to the root.
+//
+// Before calling Pop, the caller must supply the next value via t.Upd(next) or t.Kill().
+//
+// If no alive leaf remains, ok is false;
+// otherwise ok is true and ind is the index of the winning leaf.
+// ind is meaningless when ok is false.
+// The caller must check the ok flag before using ind.
+//
+// Calling Pop twice without Upd/Kill recomputes the same path and returns the same ind.
+//
+// Pop panics if t is nil.
+func (t *LoserTreeGTYPE) Pop() (ind IndexGTYPE, ok bool) {
+	leaves := t.leavesPtr
+	nodes := t.nodesPtr
+	winner := t.winner
+
+	for i := (winner + len(t.leavesSlice)) >> 1; i > 0; i >>= 1 {
+		opp := indNodeGTYPE(nodes, i)
+		oppI := *opp
+
+		winner, *opp = popBattleGTYPE(
+			*indLeafGTYPE(leaves, winner), *indLeafGTYPE(leaves, oppI),
+			winner, oppI)
+	}
+
+	t.winner = winner
+	return winner, indLeafGTYPE(leaves, winner).alive
+}
+
+// String formats the tree for debugging.
+// Levels are printed from the root (L#0) down; nodes[0] is not used.
+func (t *LoserTreeGTYPE) String() string {
+	if t == nil {
+		return "{<nil LoserTreeGTYPE>}"
+	}
+
+	var sb strings.Builder
+	sb.Grow(64 + 32*len(t.nodesSlice) + 32*len(t.leavesSlice))
+
+	fmt.Fprint(&sb, "{\nLeaves: {")
+	for i, l := range t.leavesSlice {
+		if i > 0 {
+			fmt.Fprint(&sb, " ")
+		}
+		fmt.Fprintf(&sb, "(i:%v,v:%v,alive:%v)", i, l.v, l.alive)
+	}
+	fmt.Fprint(&sb, "};\nNodes: {\n")
+
+	level := 0
+	levelStart := 1 // 0th level begin
+	for i := 1; i < len(t.nodesSlice); i++ {
+		if i == levelStart {
+			if i > 1 {
+				fmt.Fprint(&sb, "\n")
+			}
+			fmt.Fprintf(&sb, "L#%v: ", level)
+			level++
+			levelStart <<= 1
+		} else {
+			fmt.Fprint(&sb, ",")
+		}
+		fmt.Fprintf(&sb, "%v", t.nodesSlice[i])
+	}
+	if len(t.nodesSlice) > 1 {
+		fmt.Fprint(&sb, "\n")
+	}
+
+	fmt.Fprintf(&sb, "}\nwinner: %v}", t.winner)
+	return sb.String()
+}
