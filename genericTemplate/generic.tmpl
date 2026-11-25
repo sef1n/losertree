@@ -7,15 +7,9 @@ import (
 
 // leafGTYPE is a participant of a [LoserTreeGTYPE].
 //
-// After reading the winner, the caller must update the
-// winning leafGTYPE via Upd or Kill, then call Pop to re-establish the winner.
-// This package imposes no constraints on participant values.
-//
-// A leafGTYPE keeps current int value and an alive flag.
-type leafGTYPE struct {
-	v     GTYPE
-	alive bool
-}
+// It is an alias for the shared leaf type instantiated with the key type,
+// so the leaf structure itself is not generated.
+type leafGTYPE = leaf[GTYPE]
 
 // [LoserTreeGTYPE] is a tournament tree in which each internal node
 // stores the index of the leaf that lost the comparison.

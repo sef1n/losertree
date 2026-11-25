@@ -4,12 +4,6 @@ import (
 	"math/bits"
 )
 
-// Index is an alias for int introduced for readability.
-//
-// It is shared by every generated tree variant because node indices are
-// always plain ints, regardless of the key type.
-type Index = int
-
 // nextPowerOfTwo returns the smallest power of two not less than n.
 func nextPowerOfTwo(n int) int {
 	if n <= 1 {

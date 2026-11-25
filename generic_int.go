@@ -11,15 +11,9 @@ import (
 
 // leafInt is a participant of a [LoserTreeInt].
 //
-// After reading the winner, the caller must update the
-// winning leafInt via Upd or Kill, then call Pop to re-establish the winner.
-// This package imposes no constraints on participant values.
-//
-// A leafInt keeps current int value and an alive flag.
-type leafInt struct {
-	v     int
-	alive bool
-}
+// It is an alias for the shared leaf type instantiated with the key type,
+// so the leaf structure itself is not generated.
+type leafInt = leaf[int]
 
 // [LoserTreeInt] is a tournament tree in which each internal node
 // stores the index of the leaf that lost the comparison.
