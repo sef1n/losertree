@@ -6,7 +6,6 @@ package losertree
 
 import (
 	"fmt"
-	"math/bits"
 	"strings"
 )
 
@@ -22,24 +21,21 @@ type leafInt struct {
 	alive bool
 }
 
-// IndexInt is an alias for int introduced for readability.
-type IndexInt = int
-
 // [LoserTreeInt] is a tournament tree in which each internal node
 // stores the index of the leaf that lost the comparison.
 // The overall winner is kept in the winner field.
 type LoserTreeInt struct {
 	// nodesPtr stores the indices of leaves.
-	nodesPtr *IndexInt
+	nodesPtr *Index
 	// leavesPtr are the comparison participants.
 	leavesPtr *leafInt
 
 	// headers of slices to prevent garbage collection.
-	nodesSlice  []IndexInt
+	nodesSlice  []Index
 	leavesSlice []leafInt
 
 	// winner is the current minimum, exposed to the caller.
-	winner IndexInt
+	winner Index
 }
 
 // InitInt creates a LoserTree from the given values.
@@ -52,7 +48,7 @@ type LoserTreeInt struct {
 // InitInt copies the input values and pads the leaves slice with dead entries to
 // the smallest power of two not less than len(values).
 // The nodes slice is twice as long as the leaves slice.
-func InitInt(values []int) (t *LoserTreeInt, ind IndexInt, ok bool) {
+func InitInt(values []int) (t *LoserTreeInt, ind Index, ok bool) {
 	// ok for identity with the Pop
 	if len(values) == 0 {
 		return // nil, 0, false
@@ -61,38 +57,31 @@ func InitInt(values []int) (t *LoserTreeInt, ind IndexInt, ok bool) {
 	t = &LoserTreeInt{}
 
 	// len of lt.leaves with sentinels
-	ext := nextPowerOfTwoInt(len(values))
+	ext := nextPowerOfTwo(len(values))
 
 	t.leavesSlice = initLeavesInt(values, ext)
-	t.nodesSlice = initNodesInt(ext)
-	winnersSlice := initWinnersInt(t.nodesSlice, ext)
+	t.nodesSlice = initNodes(ext)
+	winnersSlice := initWinners(t.nodesSlice, ext)
 
 	// unsafe initWinners
 	// to avoid bounds checking
 	leaves := sliceLeavesInt(t.leavesSlice)
-	nodes := sliceNodesInt(t.nodesSlice)
-	winners := sliceNodesInt(winnersSlice)
+	nodes := sliceNodes(t.nodesSlice)
+	winners := sliceNodes(winnersSlice)
 
 	t.leavesPtr = leaves
 	t.nodesPtr = nodes
 
 	for p := ext - 1; p >= 1; p-- {
-		i, j := *indNodeInt(winners, p*2), *indNodeInt(winners, p*2+1)
+		i, j := *indNode(winners, p*2), *indNode(winners, p*2+1)
 		winner, loser := initBattleInt(*indLeafInt(leaves, i), *indLeafInt(leaves, j), i, j)
 
-		*indNodeInt(winners, p) = winner
-		*indNodeInt(nodes, p) = loser
+		*indNode(winners, p) = winner
+		*indNode(nodes, p) = loser
 	}
 
-	t.winner = *indNodeInt(winners, 1)
+	t.winner = *indNode(winners, 1)
 	return t, t.winner, true
-}
-
-func nextPowerOfTwoInt(n int) int {
-	if n <= 1 {
-		return 1
-	}
-	return 1 << bits.Len(uint(n-1))
 }
 
 // initLeavesInt initializes the leaves slice of tree
@@ -112,24 +101,6 @@ func initLeavesInt(values []int, ext int) []leafInt {
 	}
 
 	return leaves
-}
-
-// initNodesInt initializes the nodes slice of tree
-// with indices of participants.
-func initNodesInt(ext int) []IndexInt {
-	nodes := make([]IndexInt, ext*2)
-	// fill start level of tree with indexes
-	for i := 0; i < ext; i++ {
-		nodes[ext+i] = i
-	}
-	return nodes
-}
-
-// initWinnersInt creates a temporary nodes slice by copying the nodes[ext:].
-func initWinnersInt(nodes []IndexInt, ext int) []IndexInt {
-	w := make([]IndexInt, ext*2)
-	copy(w[ext:], nodes[ext:])
-	return w
 }
 
 // Upd sets the value of the current winning leaf to next.
@@ -164,13 +135,13 @@ func (t *LoserTreeInt) Kill() {
 // Calling Pop twice without Upd/Kill recomputes the same path and returns the same ind.
 //
 // Pop panics if t is nil.
-func (t *LoserTreeInt) Pop() (ind IndexInt, ok bool) {
+func (t *LoserTreeInt) Pop() (ind Index, ok bool) {
 	leaves := t.leavesPtr
 	nodes := t.nodesPtr
 	winner := t.winner
 
 	for i := (winner + len(t.leavesSlice)) >> 1; i > 0; i >>= 1 {
-		opp := indNodeInt(nodes, i)
+		opp := indNode(nodes, i)
 		oppI := *opp
 
 		winner, *opp = popBattleInt(

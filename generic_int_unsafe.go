@@ -6,22 +6,10 @@ package losertree
 
 import "unsafe"
 
-// sliceNodes returns a pointer to the first element of s.
-// Similar to unsafe.SliceData(s).
-func sliceNodesInt(s []IndexInt) *IndexInt {
-	return unsafe.SliceData(s)
-}
-
 // sliceLeaves returns a pointer to the first element of s.
 // Similar to unsafe.SliceData(s).
 func sliceLeavesInt(s []leafInt) *leafInt {
 	return unsafe.SliceData(s)
-}
-
-// indNode returns a pointer to the ith node, starting from s.
-// It is equivalent to &s[i], but skips bounds checking.
-func indNodeInt(s *IndexInt, i int) *IndexInt {
-	return (*IndexInt)(unsafe.Add(unsafe.Pointer(s), uintptr(i)*unsafe.Sizeof(*s)))
 }
 
 // indLeaf returns a pointer to the ith leaf, starting from s.

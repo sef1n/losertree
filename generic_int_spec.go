@@ -16,7 +16,7 @@ func deadValInt() int {
 //
 // It is safe to call only during Init, before the first Kill or Upd call, because
 // of the layout invariant maintained during Init: a sentinel can't be on the left side of an alive leaf.
-func initBattleInt(i, j leafInt, ii, ji IndexInt) (winner, loser IndexInt) {
+func initBattleInt(i, j leafInt, ii, ji Index) (winner, loser Index) {
 	if j.v < i.v {
 		return ji, ii
 	}
@@ -32,7 +32,7 @@ func initBattleInt(i, j leafInt, ii, ji IndexInt) (winner, loser IndexInt) {
 // this is safe only while the invariant dead => v == math.MaxInt holds.
 //
 // If both operands are sentinels, the winner is arbitrary.
-func popBattleInt(i, j leafInt, ii, ji IndexInt) (winner, loser IndexInt) {
+func popBattleInt(i, j leafInt, ii, ji Index) (winner, loser Index) {
 	if j.v < i.v || !i.alive {
 		return ji, ii
 	}

@@ -12,7 +12,7 @@ func deadValGTYPE() GTYPE {
 //
 // It is safe to call only during Init, before the first Kill or Upd call, because
 // of the layout invariant maintained during Init: a sentinel can't be on the left side of an alive leaf.
-func initBattleGTYPE(i, j leafGTYPE, ii, ji IndexGTYPE) (winner, loser IndexGTYPE) {
+func initBattleGTYPE(i, j leafGTYPE, ii, ji Index) (winner, loser Index) {
 	if j.v < i.v {
 		return ji, ii
 	}
@@ -28,7 +28,7 @@ func initBattleGTYPE(i, j leafGTYPE, ii, ji IndexGTYPE) (winner, loser IndexGTYP
 // this is safe only while the invariant dead => v == math.MaxInt holds.
 //
 // If both operands are sentinels, the winner is arbitrary.
-func popBattleGTYPE(i, j leafGTYPE, ii, ji IndexGTYPE) (winner, loser IndexGTYPE) {
+func popBattleGTYPE(i, j leafGTYPE, ii, ji Index) (winner, loser Index) {
 	if j.v < i.v || !i.alive {
 		return ji, ii
 	}
