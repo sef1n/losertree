@@ -1,3 +1,6 @@
+// Package heap_bench_test measures a straightforward container/heap merge loop
+// as a common baseline. It follows the fairness contract described in
+// benchmarks/losertree/bench_test.go.
 package heap_bench_test
 
 import (

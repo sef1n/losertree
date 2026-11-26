@@ -1,10 +1,10 @@
-// Package ltree_bench measures the losertree merge loop.
+// Package ltree_bench_test measures the losertree merge loop.
 //
-// Fairness contract with benchmarks/goloser:
-//   - both benchmarks are named BenchmarkMergePop
-//   - both have identical sub-names k=%d,n=%d
-//   - both do exactly k*n merge steps per b.N iteration
-//   - both exclude tree construction from the timed section
+// Fairness contract with benchmarks/goloser and benchmarks/heap:
+//   - all benchmarks are named BenchmarkMergePop
+//   - all have identical sub-names k=%d,n=%d
+//   - all do exactly k*n merge steps per b.N iteration
+//   - all exclude tree construction from the timed section
 package ltree_bench_test
 
 import (

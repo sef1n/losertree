@@ -1,6 +1,6 @@
-// Package goloser_bench measures the go-loser merge loop as a baseline
-// for benchmarks/ltree. See the fairness contract in
-// benchmarks/ltree/bench_test.go for the full list of invariants.
+// Package goloser_bench_test measures the go-loser merge loop as a baseline
+// for benchmarks/losertree. See the fairness contract in
+// benchmarks/losertree/bench_test.go for the full list of invariants.
 package goloser_bench_test
 
 import (
