@@ -2,14 +2,15 @@ package losertree
 
 import "unsafe"
 
-// sliceLeaves returns a pointer to the first element of s.
-// Similar to unsafe.SliceData(s).
+// sliceLeavesGTYPE returns a pointer to the first leaf of s.
+// It is equivalent to `unsafe.SliceData(s)`; the caller must keep s alive.
 func sliceLeavesGTYPE(s []leafGTYPE) *leafGTYPE {
 	return unsafe.SliceData(s)
 }
 
-// indLeaf returns a pointer to the ith leaf, starting from s.
-// It is equivalent to &s[i], but skips bounds checking.
+// indLeafGTYPE returns a pointer to the ith leaf, starting from s.
+// It is equivalent to &s[i], but skips bounds checking; the caller must keep
+// s alive and i in range.
 func indLeafGTYPE(s *leafGTYPE, i int) *leafGTYPE {
 	return (*leafGTYPE)(unsafe.Add(unsafe.Pointer(s), uintptr(i)*unsafe.Sizeof(*s)))
 }
