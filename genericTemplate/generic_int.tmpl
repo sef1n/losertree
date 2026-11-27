@@ -2,16 +2,25 @@ package generic
 
 import "math"
 
+// deadValGTYPE returns the dead sentinel, `math.MaxInt`.
+//
+// It must be greater than or equal to every live key so that a dead leaf
+// loses against an alive one. Liveness is tracked by the alive flag, so
+// `math.MaxInt` remains a valid live key: a live leaf with this value beats
+// a dead one.
 func deadValGTYPE() GTYPE {
 	return math.MaxInt
 }
 
-// initBattleGTYPE compares only the v field of each leaf and returns the winner and loser indices.
+// initBattleGTYPE compares only the v field of each leaf and returns the
+// winner and loser indices.
 //
-// Used during Init; faster because it skips the alive check.
+// Used during InitGTYPE; faster because it skips the alive check.
 //
-// It is safe to call only during Init, before the first Kill or Upd call, because
-// of the layout invariant maintained during Init: a sentinel can't be on the left side of an alive leaf.
+// It is safe to call only during InitGTYPE, before the first Kill or Upd call.
+// Init lays out live leaves first and pads with sentinels, so a sentinel can
+// never be in the left subtree of an alive leaf. Skipping the alive check is
+// therefore harmless during construction.
 func initBattleGTYPE(i, j leafGTYPE, ii, ji Index) (winner, loser Index) {
 	if j.v < i.v {
 		return ji, ii
@@ -22,10 +31,13 @@ func initBattleGTYPE(i, j leafGTYPE, ii, ji Index) (winner, loser Index) {
 // popBattleGTYPE compares v of both leaves and checks alive of the first operand only.
 // It returns the winner and loser indices.
 //
-// Used by Pop; checks alive of the first operand so killed leaves do not win against alive leaves.
+// Used by Pop; checking alive of the first operand keeps killed leaves from
+// winning against alive leaves.
 //
-// WARN: A sentinel j with v < i.v can win even though j.alive is false;
-// this is safe only while the invariant dead => v == math.MaxInt holds.
+// WARN: A dead operand j can still win on j.v < i.v because its alive flag is
+// not checked. This is safe only while the dead sentinel is greater than or
+// equal to every live key. If a dead leaf carries a smaller value (for example,
+// after Upd on an exhausted tree), Pop can return it.
 //
 // If both operands are sentinels, the winner is arbitrary.
 func popBattleGTYPE(i, j leafGTYPE, ii, ji Index) (winner, loser Index) {
